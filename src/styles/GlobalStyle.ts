@@ -9,7 +9,7 @@ const GlobalStyles = createGlobalStyle`
   }
   
   body {
-    background-color: #f5f5f5;
+    background-color: #ededed;
     font-family: 'Noto Sans KR', sans-serif;
     line-height: 1;
   }

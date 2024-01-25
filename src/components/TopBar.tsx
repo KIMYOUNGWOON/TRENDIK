@@ -4,7 +4,7 @@ import { faWifi } from "@fortawesome/free-solid-svg-icons";
 import { faSignal } from "@fortawesome/free-solid-svg-icons";
 import { faBatteryThreeQuarters } from "@fortawesome/free-solid-svg-icons";
 
-function Header() {
+function TopBar() {
   function getCurrentTime() {
     const now = new Date();
     const hours = now.getHours();
@@ -13,7 +13,7 @@ function Header() {
     const formattedHours = hours < 10 ? `0${hours}` : hours;
     const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
 
-    return `${formattedHours} : ${formattedMinutes}`;
+    return `${formattedHours}:${formattedMinutes}`;
   }
 
   return (
@@ -34,13 +34,17 @@ const Container = styled.header`
   align-items: center;
   position: fixed;
   top: 0;
-  width: 768px;
+  left: 50%;
+  width: 500px;
   height: 40px;
   padding: 0 30px;
   background-color: #000;
+  transform: translateX(-50%);
+  z-index: 1;
 `;
 
 const CurrentTime = styled.div`
+  letter-spacing: 2px;
   color: #fff;
 `;
 
@@ -63,4 +67,4 @@ const BatteryIcon = styled(FontAwesomeIcon)`
   font-size: 20px;
 `;
 
-export default Header;
+export default TopBar;

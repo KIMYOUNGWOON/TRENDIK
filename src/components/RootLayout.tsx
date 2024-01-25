@@ -1,18 +1,20 @@
 import { Outlet } from "react-router-dom";
-import Header from "./Header";
+import TopBar from "./TopBar";
 import styled from "styled-components";
 
 function RootLayout() {
   return (
-    <Container>
-      <Header />
-      <Outlet />
-    </Container>
+    <>
+      <TopBar />
+      <Container>
+        <Outlet />
+      </Container>
+    </>
   );
 }
 
 const Container = styled.div`
-  width: 768px;
+  width: 500px;
   margin: 0 auto;
   background-color: #fff;
 `;
