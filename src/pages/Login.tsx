@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,10 +6,18 @@ import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faUnlockKeyhole } from "@fortawesome/free-solid-svg-icons";
 import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+import { useMutation } from "@tanstack/react-query";
+import { authSignIn } from "../api/api";
 
 const INPUT_VALUE = {
   email: "",
   password: "",
+};
+
+const ERROR_MESSAGE = {
+  "auth/invalid-email": "등록되지 않은 이메일입니다.",
+  "auth/invalid-credential": "비밀번호가 일치하지 않습니다.",
 };
 
 const LINK_LIST = ["홈으로", "고객지원", "이용약관", "개인정보처리방침"];
@@ -24,83 +32,115 @@ function Login() {
     setInputValue({ ...inputValue, [name]: value });
   }
 
+  const loginMutation = useMutation({
+    mutationFn: (value: { email: string; password: string }) =>
+      authSignIn(value),
+  });
+
+  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    loginMutation.mutate(inputValue, {
+      onSuccess: () => navigate("/"),
+      onError: (e) => {
+        if (typeof e === "string") {
+          alert(ERROR_MESSAGE[e]);
+        }
+      },
+    });
+  }
+
   const ENABLE_BUTTON =
     inputValue.email.length !== 0 && inputValue.password.length !== 0;
 
   return (
-    <Container>
-      <LoginText>로그인</LoginText>
-      <Logo>TRENDIK.</Logo>
-      <Slogan>우린 스타일을 새롭게 쉐어해.</Slogan>
-      <Form>
-        <InputWrapper>
-          <Label htmlFor="email">
-            <InputIcon icon={faEnvelope} />
-          </Label>
-          <Input
-            id="email"
-            name="email"
-            placeholder="이메일 (example@email.com)"
-            value={inputValue.email}
-            autoComplete="off"
-            onChange={handleChange}
-          />
-        </InputWrapper>
-        <InputWrapper>
-          <Label htmlFor="password">
-            <InputIcon icon={faUnlockKeyhole} />
-          </Label>
-          <Input
-            id="password"
-            name="password"
-            placeholder="비밀번호"
-            type={viewPassword ? "text" : "password"}
-            value={inputValue.password}
-            autoComplete="off"
-            onChange={handleChange}
-          />
-          <ViewIcon
-            icon={viewPassword ? faEye : faEyeSlash}
-            onClick={() => {
-              setViewPassword((prev) => !prev);
-            }}
-          />
-        </InputWrapper>
-        <LoginButton $disabled={ENABLE_BUTTON}>로그인</LoginButton>
-      </Form>
-      <ForgetPassword>비밀번호를 잊으셨나요?</ForgetPassword>
-      <UserConfirm>
-        회원이 아니신가요? <GoToJoin to="/join">지금 가입하세요</GoToJoin>
-      </UserConfirm>
-      <LinkWrapper>
-        {LINK_LIST.map((link, index) => {
-          return (
-            <LinkElement
-              key={index}
+    <LoginContainer>
+      <ContentWrapper>
+        <LoginText>로그인</LoginText>
+        <Logo>TRENDIK.</Logo>
+        <Slogan>우린 스타일을 새롭게 쉐어해.</Slogan>
+        <Form onSubmit={handleSubmit}>
+          <InputWrapper>
+            <Label htmlFor="email">
+              <InputIcon icon={faEnvelope} />
+            </Label>
+            <Input
+              id="email"
+              name="email"
+              placeholder="이메일 (example@email.com)"
+              value={inputValue.email}
+              autoComplete="off"
+              onChange={handleChange}
+            />
+          </InputWrapper>
+          <InputWrapper>
+            <Label htmlFor="password">
+              <InputIcon icon={faUnlockKeyhole} />
+            </Label>
+            <Input
+              id="password"
+              name="password"
+              placeholder="비밀번호"
+              type={viewPassword ? "text" : "password"}
+              value={inputValue.password}
+              autoComplete="off"
+              onChange={handleChange}
+            />
+            <ViewIcon
+              icon={viewPassword ? faEye : faEyeSlash}
               onClick={() => {
-                navigate("/");
+                setViewPassword((prev) => !prev);
               }}
-            >
-              {link}
-            </LinkElement>
-          );
-        })}
-      </LinkWrapper>
-    </Container>
+            />
+          </InputWrapper>
+          {loginMutation.isPending ? (
+            <LoadingWrapper>
+              <SpinnerIcon icon={faSpinner} spinPulse />
+            </LoadingWrapper>
+          ) : (
+            <LoginButton disabled={!ENABLE_BUTTON} $disabled={ENABLE_BUTTON}>
+              로그인
+            </LoginButton>
+          )}
+        </Form>
+        <ForgetPassword>비밀번호를 잊으셨나요?</ForgetPassword>
+        <UserConfirm>
+          회원이 아니신가요? <GoToJoin to="/join">지금 가입하세요</GoToJoin>
+        </UserConfirm>
+        <LinkWrapper>
+          {LINK_LIST.map((link, index) => {
+            return (
+              <LinkElement
+                key={index}
+                onClick={() => {
+                  navigate("/");
+                }}
+              >
+                {link}
+              </LinkElement>
+            );
+          })}
+        </LinkWrapper>
+      </ContentWrapper>
+    </LoginContainer>
   );
 }
 
-const Container = styled.div`
-  width: 310px;
+const LoginContainer = styled.div`
+  width: 500px;
   height: 100vh;
   margin: 0 auto;
-  padding-top: 100px;
+  padding-top: 80px;
   background-color: #fff;
 `;
 
+const ContentWrapper = styled.div`
+  width: 310px;
+  margin: 0 auto;
+`;
+
 const LoginText = styled.div`
-  margin-bottom: 100px;
-  font-size: 26px;
+  margin-bottom: 160px;
+  font-size: 24px;
   text-align: center;
 `;
 
@@ -111,7 +151,7 @@ const Logo = styled.div`
 `;
 
 const Slogan = styled.div`
-  margin-bottom: 34px;
+  margin-bottom: 40px;
   font-size: 20px;
   font-weight: 500;
 `;
@@ -183,7 +223,7 @@ const ViewIcon = styled(FontAwesomeIcon)`
 const LoginButton = styled.button<{ $disabled: boolean }>`
   width: 100%;
   height: 48px;
-  margin-top: 18px;
+  margin-top: 16px;
   margin-bottom: 10px;
   padding: 0;
   border: none;
@@ -197,8 +237,21 @@ const LoginButton = styled.button<{ $disabled: boolean }>`
   }
 `;
 
+const LoadingWrapper = styled.div`
+  width: 100%;
+  height: 48px;
+  margin-top: 26px;
+  margin-bottom: 10px;
+  text-align: center;
+`;
+
+const SpinnerIcon = styled(FontAwesomeIcon)`
+  color: rgba(1, 1, 1, 0.8);
+  font-size: 40px;
+`;
+
 const ForgetPassword = styled.div`
-  margin-bottom: 60px;
+  margin-bottom: 70px;
   color: #74787e;
   font-size: 12px;
   text-decoration: underline;
@@ -213,7 +266,7 @@ const UserConfirm = styled.div`
   color: #74787e;
   font-size: 14px;
   text-align: center;
-  margin-bottom: 234px;
+  margin-bottom: 250px;
 `;
 
 const GoToJoin = styled(Link)`

@@ -40,7 +40,7 @@ const Container = styled.header`
   padding: 0 30px;
   background-color: #000;
   transform: translateX(-50%);
-  z-index: 1;
+  z-index: 9999;
 `;
 
 const CurrentTime = styled.div`
