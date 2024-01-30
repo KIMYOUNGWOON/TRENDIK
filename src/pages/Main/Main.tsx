@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-import styled, { keyframes } from "styled-components";
-import MainBanner from "./components/Mainbanner";
+import styled from "styled-components";
+import MainBanner from "./components/MainBanner";
 
 function Main() {
   const navigate = useNavigate();
@@ -24,19 +24,9 @@ function Main() {
   );
 }
 
-const mount = keyframes`
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-`;
-
 const Container = styled.div`
   margin-top: 40px;
   background-color: #fff;
-  animation: ${mount} 0.2s ease-in-out;
 `;
 
 const Header = styled.div`

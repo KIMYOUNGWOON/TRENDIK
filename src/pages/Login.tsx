@@ -15,11 +15,6 @@ const INPUT_VALUE = {
   password: "",
 };
 
-const ERROR_MESSAGE = {
-  "auth/invalid-email": "등록되지 않은 이메일입니다.",
-  "auth/invalid-credential": "비밀번호가 일치하지 않습니다.",
-};
-
 const LINK_LIST = ["홈으로", "고객지원", "이용약관", "개인정보처리방침"];
 
 function Login() {
@@ -43,7 +38,7 @@ function Login() {
       onSuccess: () => navigate("/"),
       onError: (e) => {
         if (typeof e === "string") {
-          alert(ERROR_MESSAGE[e]);
+          alert("이메일 또는 비밀번호를 확인해주세요");
         }
       },
     });
@@ -53,10 +48,10 @@ function Login() {
     inputValue.email.length !== 0 && inputValue.password.length !== 0;
 
   return (
-    <LoginContainer>
-      <ContentWrapper>
-        <LoginText>로그인</LoginText>
-        <Logo>TRENDIK.</Logo>
+    <Container>
+      <ContentBox>
+        <Title>로그인</Title>
+        <TextLogo>TRENDIK.</TextLogo>
         <Slogan>우린 스타일을 새롭게 쉐어해.</Slogan>
         <Form onSubmit={handleSubmit}>
           <InputWrapper>
@@ -120,31 +115,30 @@ function Login() {
             );
           })}
         </LinkWrapper>
-      </ContentWrapper>
-    </LoginContainer>
+      </ContentBox>
+    </Container>
   );
 }
 
-const LoginContainer = styled.div`
+const Container = styled.div`
   width: 500px;
-  height: 100vh;
   margin: 0 auto;
-  padding-top: 80px;
+  padding: 80px 0 80px;
   background-color: #fff;
 `;
 
-const ContentWrapper = styled.div`
+const ContentBox = styled.div`
   width: 310px;
   margin: 0 auto;
 `;
 
-const LoginText = styled.div`
+const Title = styled.div`
   margin-bottom: 160px;
   font-size: 24px;
   text-align: center;
 `;
 
-const Logo = styled.div`
+const TextLogo = styled.div`
   margin-bottom: 34px;
   font-size: 26px;
   font-weight: 700;

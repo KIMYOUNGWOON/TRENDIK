@@ -6,8 +6,13 @@ import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark } from "@fortawesome/free-regular-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
+import { DocumentData } from "firebase/firestore";
 
-function Navigation() {
+interface Props {
+  authUser: DocumentData | undefined;
+}
+
+const Navigation: React.FC<Props> = ({ authUser }) => {
   const navigate = useNavigate();
   return (
     <Container>
@@ -23,13 +28,18 @@ function Navigation() {
       <UploadIcon icon={faCirclePlus} />
       <IconWrapper>
         <NavIcon icon={faBookmark} />
-        <NavIcon icon={faUser} />
+        <NavIcon
+          icon={faUser}
+          onClick={() => {
+            navigate(`/users/${authUser?.userId}`);
+          }}
+        />
       </IconWrapper>
     </Container>
   );
-}
+};
 
-const Container = styled.div`
+const Container = styled.nav`
   display: flex;
   justify-content: space-between;
   align-items: center;

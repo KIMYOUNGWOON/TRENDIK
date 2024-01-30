@@ -50,8 +50,12 @@ function Join() {
   }
 
   const signUpMutation = useMutation({
-    mutationFn: (newUser: { email: string; password: string; name: string }) =>
-      authSignUp(newUser),
+    mutationFn: (newUser: {
+      email: string;
+      password: string;
+      name: string;
+      nickName: string;
+    }) => authSignUp(newUser),
   });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -61,6 +65,7 @@ function Join() {
       email: inputValue.email,
       password: inputValue.password,
       name: inputValue.name,
+      nickName: inputValue.nickName,
     };
 
     signUpMutation.mutate(newUser, {
@@ -117,10 +122,10 @@ function Join() {
     inputValue.personalInfoAgree;
 
   return (
-    <JoinContainer>
-      <ContentWrapper>
-        <Logo>TRENDIK.</Logo>
-        <JoinTitle>회원가입</JoinTitle>
+    <Container>
+      <ContentBox>
+        <TextLogo>TRENDIK.</TextLogo>
+        <JoinText>회원가입</JoinText>
         <ConfirmText>
           이미 계정이 있으신가요? <GoToLogin to="/login">로그인</GoToLogin>
         </ConfirmText>
@@ -157,14 +162,14 @@ function Join() {
               onChange={handleChange}
               $isValidate={passwordCheck}
             />
-            <ValidationContainer>
+            <ValidationBox>
               {PASSWORD_VALIDATION.map((el) => (
                 <ValidationWrapper key={el.id}>
                   <CheckIcon icon={faCircleCheck} $isValidate={el.isChecked} />
                   <ValidationText>{el.text}</ValidationText>
                 </ValidationWrapper>
               ))}
-            </ValidationContainer>
+            </ValidationBox>
             <EyeSlashWrapper>
               {viewPassword[0] ? (
                 <EyeIcon
@@ -254,7 +259,7 @@ function Join() {
             />
           </InputWrapper>
           <AgreeTitle>약관 동의</AgreeTitle>
-          <AgreeContainer>
+          <AgreeBox>
             <AgreeWrapper>
               <CheckBox
                 name="serviceAgree"
@@ -271,7 +276,7 @@ function Join() {
               />
               <AgreeText>[필수] 개인정보 수집 및 이용에 동의합니다.</AgreeText>
             </AgreeWrapper>
-          </AgreeContainer>
+          </AgreeBox>
           {signUpMutation.isPending ? (
             <LoadingWrapper>
               <SpinnerIcon icon={faSpinner} spinPulse />
@@ -282,30 +287,30 @@ function Join() {
             </JoinButton>
           )}
         </Form>
-      </ContentWrapper>
-    </JoinContainer>
+      </ContentBox>
+    </Container>
   );
 }
 
-const JoinContainer = styled.div`
+const Container = styled.div`
   width: 500px;
   margin: 0 auto;
   padding: 120px 0 80px;
   background-color: #fff;
 `;
 
-const ContentWrapper = styled.div`
+const ContentBox = styled.div`
   width: 360px;
   margin: 0 auto;
 `;
 
-const Logo = styled.div`
+const TextLogo = styled.div`
   margin-bottom: 34px;
   font-size: 24px;
   font-weight: 700;
 `;
 
-const JoinTitle = styled.div`
+const JoinText = styled.div`
   margin-bottom: 28px;
   font-size: 28px;
 `;
@@ -367,7 +372,7 @@ const Input = styled.input<{ $isValidate: boolean }>`
   }
 `;
 
-const ValidationContainer = styled.div`
+const ValidationBox = styled.div`
   display: flex;
   gap: 18px;
 `;
@@ -448,7 +453,7 @@ const AgreeTitle = styled.div`
   font-size: 14px;
 `;
 
-const AgreeContainer = styled.div`
+const AgreeBox = styled.div`
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -499,5 +504,21 @@ const SpinnerIcon = styled(FontAwesomeIcon)`
   color: rgba(1, 1, 1, 0.8);
   font-size: 40px;
 `;
+
+// const NickNameCheck = styled.div`
+//   position: absolute;
+//   top: 32px;
+//   right: 10px;
+//   padding: 6px 12px;
+//   border-radius: 6px;
+//   background-color: rgba(1, 1, 1, 0.2);
+//   color: #fff;
+//   font-size: 12px;
+
+//   &:hover {
+//     cursor: pointer;
+//     background-color: rgba(1, 1, 1, 0.8);
+//   }
+// `;
 
 export default Join;
