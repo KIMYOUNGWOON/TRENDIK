@@ -1,15 +1,15 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { logOut } from "../api/api";
+import { logOut } from "../../api/userApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
-import Header from "../components/Header";
-import UserContext from "../contexts/UserContext";
-import { componentMount } from "../styles/Animation";
+import Header from "../../components/Header";
+import UserContext from "../../contexts/UserContext";
+import { componentMount } from "../../styles/Animation";
 
 function Menu() {
   const { authUser } = useContext(UserContext);
@@ -29,6 +29,7 @@ function Menu() {
             </ProfileImageWrapper>
             <Nickname>{authUser?.nickName}</Nickname>
           </ProfileWrapper>
+
           <EditButton
             onClick={() => {
               navigate("/profile-edit");
@@ -75,12 +76,11 @@ function Menu() {
 }
 
 const Container = styled.div`
-  padding-top: 40px;
   animation: ${componentMount} 0.15s linear;
 `;
 
 const ContentBox = styled.div`
-  padding: 100px 30px 140px;
+  padding: 130px 30px 0;
   background-color: #fff;
 `;
 
@@ -88,8 +88,8 @@ const ProfileBox = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 30px;
   border-bottom: 1px solid rgba(1, 1, 1, 0.4);
-  padding-bottom: 40px;
 `;
 
 const ProfileWrapper = styled.div`
@@ -114,22 +114,22 @@ const ProfileImage = styled.img`
 `;
 
 const ProfileIcon = styled(FontAwesomeIcon)`
-  color: rgba(1, 1, 1, 0.2);
+  color: rgba(1, 1, 1, 0.1);
   font-size: 60px;
 `;
 
 const Nickname = styled.div`
   padding-bottom: 6px;
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 18px;
+  font-weight: 600;
 `;
 
 const EditButton = styled.div`
   padding: 10px 20px;
-  border: 1px solid rgba(1, 1, 1, 0.2);
-  border-radius: 20px;
-  color: rgba(1, 1, 1, 0.5);
-  font-size: 14px;
+  border: 1px solid rgba(1, 1, 1, 0.3);
+  border-radius: 8px;
+  color: rgba(1, 1, 1, 0.4);
+  font-size: 12px;
   transition: 0.4s;
 
   &:hover {
@@ -145,9 +145,8 @@ const ListItemWrapper = styled.div`
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 30px 0;
+  padding: 28px 0;
   border-bottom: 1px solid rgba(1, 1, 1, 0.1);
-  font-size: 18px;
 
   &:hover {
     cursor: pointer;
@@ -156,7 +155,7 @@ const ListItemWrapper = styled.div`
 
 const ListIcon = styled(FontAwesomeIcon)<{ $color: boolean }>`
   color: ${({ $color }) => ($color ? "#f50100" : "#222")};
-  font-size: 28px;
+  font-size: 24px;
 `;
 
 const ListText = styled.div<{ $color: boolean }>`

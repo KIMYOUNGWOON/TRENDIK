@@ -6,6 +6,7 @@ import {
 import { auth, db, storage } from "../firebase";
 import { FirebaseError } from "firebase/app";
 import {
+  DocumentData,
   collection,
   doc,
   getDoc,
@@ -15,8 +16,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { ImageUpload, UpdateData, UserType } from "./types";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { ImageUpload, UpdateData } from "./types";
+import {
+  deleteObject,
+  getDownloadURL,
+  ref,
+  uploadBytes,
+} from "firebase/storage";
 
 interface User {
   email: string;
@@ -54,17 +60,34 @@ export async function authSignUp({ email, password, name, nickName }: User) {
 
 export async function authSignIn({ email, password }: User) {
   try {
-    const userCredential = await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
-    const user = userCredential.user;
-    console.log(user);
+    await signInWithEmailAndPassword(auth, email, password);
   } catch (e) {
     if (e instanceof FirebaseError) {
       throw e.code;
     }
+  }
+}
+
+export async function emailDuplicateCheck(email: string) {
+  try {
+    const collectionRef = collection(db, "users");
+    const q = query(collectionRef, where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.empty;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function nickNameDuplicateCheck(nickName: string) {
+  try {
+    const collectionRef = collection(db, "users");
+    const q = query(collectionRef, where("nickName", "==", nickName));
+    const querySnapshot = await getDocs(q);
+    querySnapshot.empty;
+    return querySnapshot.empty;
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -73,31 +96,36 @@ export async function logOut() {
   alert("로그아웃 되었습니다.");
 }
 
-export async function getUser(userId: string) {
+export async function getUser(userId: string | undefined) {
   try {
-    const docRef = doc(db, "users", userId);
-    const docSnap = await getDoc(docRef);
-    return docSnap.data();
+    if (userId) {
+      const docRef = doc(db, "users", userId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.data();
+    }
   } catch (e) {
     console.log(e);
   }
 }
 
-export async function getUsers(userId: string) {
-  try {
-    const users: UserType[] = [];
-    const usersCollection = collection(db, "users");
-    const q = query(usersCollection, where("userId", "!=", userId));
+export async function getUsers() {
+  const authUser = auth.currentUser;
 
+  if (!authUser) return;
+
+  try {
+    const users: DocumentData[] = [];
+    const usersCollection = collection(db, "users");
+    const q = query(usersCollection, where("userId", "!=", authUser.uid));
     const querySnapshot = await getDocs(q);
 
     querySnapshot.forEach((doc) => {
-      users.push({ ...(doc.data() as UserType) });
+      users.push(doc.data());
     });
 
     return users;
-  } catch (e) {
-    console.log(e);
+  } catch (error) {
+    console.log(error);
   }
 }
 
@@ -155,5 +183,32 @@ export async function ImageUpload({
     }
 
     return await getUser(user.uid);
+  }
+}
+
+export async function imageReset(profileImage: string, coverImage: string) {
+  const user = auth.currentUser;
+  try {
+    if (user) {
+      if (profileImage) {
+        const profileImageRef = ref(storage, `users/${user.uid}/profile-image`);
+        await deleteObject(profileImageRef);
+      }
+
+      if (coverImage) {
+        const coverImageRef = ref(storage, `users/${user.uid}/cover-image`);
+        await deleteObject(coverImageRef);
+      }
+
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        profileImage: "",
+        coverImage: "",
+      });
+
+      return await getUser(user.uid);
+    }
+  } catch (error) {
+    console.log(error);
   }
 }

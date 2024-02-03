@@ -9,9 +9,9 @@ const GlobalStyles = createGlobalStyle`
   }
   
   body {
+    height: 100%;
     background-color: #ededed;
     font-family: 'Noto Sans KR', sans-serif;
-    line-height: 1;
   }
 `;
 

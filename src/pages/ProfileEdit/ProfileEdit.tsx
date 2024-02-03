@@ -24,11 +24,7 @@ function ProfileEdit() {
     <Container>
       <Header title="프로필 설정" />
       <ContentBox>
-        <EditImage
-          profileImage={authUser?.profileImage}
-          coverImage={authUser?.coverImage}
-          setAuthUser={setAuthUser}
-        />
+        <EditImage authUser={authUser} setAuthUser={setAuthUser} />
         <ProfileInfoBox>
           <InputWrapper>
             <Label>닉네임</Label>
@@ -69,13 +65,13 @@ function ProfileEdit() {
 }
 
 const Container = styled.div`
-  padding: 40px 0 100px;
   animation: ${componentMount} 0.15s linear;
 `;
 
 const ContentBox = styled.div`
   position: relative;
-  padding-top: 60px;
+  padding: 100px 0;
+  background-color: #fff;
 `;
 
 const ProfileInfoBox = styled.form`
@@ -89,7 +85,7 @@ const InputWrapper = styled.div`
 
 const Label = styled.label`
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: rgba(1, 1, 1, 0.7);
   font-size: 14px;
   font-weight: 500;
@@ -102,7 +98,7 @@ const Label = styled.label`
 const Input = styled.input`
   display: block;
   width: 100%;
-  height: 40px;
+  height: 44px;
   padding: 0 20px;
   border: 1px solid rgba(1, 1, 1, 0.3);
   border-radius: 8px;
@@ -124,7 +120,7 @@ const TextArea = styled.textarea`
 
 const NickNameEditBtn = styled.div`
   position: absolute;
-  top: 32px;
+  top: 36px;
   right: 10px;
   padding: 6px 12px;
   border-radius: 6px;
@@ -140,8 +136,8 @@ const NickNameEditBtn = styled.div`
 `;
 
 const BioEditBtn = styled(NickNameEditBtn)`
-  top: 136px;
-  right: 14px;
+  top: 138px;
+  right: 16px;
 `;
 
 const ModalBackground = styled.div`

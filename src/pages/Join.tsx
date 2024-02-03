@@ -6,7 +6,11 @@ import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
-import { authSignUp } from "../api/api";
+import {
+  authSignUp,
+  emailDuplicateCheck,
+  nickNameDuplicateCheck,
+} from "../api/userApi";
 import styled from "styled-components";
 import {
   emailRegex,
@@ -15,6 +19,7 @@ import {
   englishLetterRegex,
   containNumberRegex,
   containsSpecialCharacterRegex,
+  nickNameRegex,
 } from "../validation";
 
 const INPUT_VALUE = {
@@ -27,8 +32,17 @@ const INPUT_VALUE = {
   personalInfoAgree: false,
 };
 
+const DUPLICATE_CHECK: {
+  emailCheck: boolean | undefined;
+  nickNameCheck: boolean | undefined;
+} = {
+  emailCheck: false,
+  nickNameCheck: false,
+};
+
 function Join() {
   const [inputValue, setInputValue] = useState(INPUT_VALUE);
+  const [checkValue, setCheckValue] = useState(DUPLICATE_CHECK);
   const [viewPassword, setViewPassword] = useState([false, false]);
   const navigate = useNavigate();
 
@@ -39,6 +53,10 @@ function Join() {
       const { checked } = e.target;
       setInputValue({ ...inputValue, [name]: checked });
       return;
+    }
+
+    if (name === "email" || name === "nickName") {
+      setCheckValue({ ...checkValue, [name + "Check"]: false });
     }
 
     setInputValue({ ...inputValue, [name]: value });
@@ -89,6 +107,9 @@ function Join() {
     inputValue.password === inputValue.passwordConfirm ||
     inputValue.passwordConfirm.length === 0;
 
+  const nickNameCheck =
+    nickNameRegex.test(inputValue.nickName) || inputValue.nickName.length === 0;
+
   const PASSWORD_VALIDATION = [
     {
       id: 1,
@@ -113,9 +134,12 @@ function Join() {
   ];
 
   const ENABLE_BUTTON =
+    checkValue.emailCheck &&
+    checkValue.nickNameCheck &&
     emailCheck &&
     passwordCheck &&
     passwordConfirmCheck &&
+    nickNameCheck &&
     inputValue.name.length !== 0 &&
     inputValue.nickName.length !== 0 &&
     inputValue.serviceAgree &&
@@ -146,6 +170,25 @@ function Join() {
             />
             {!emailCheck && (
               <ErrorMessage>이메일 주소 형식을 확인해 주세요</ErrorMessage>
+            )}
+            {checkValue.emailCheck ? (
+              <CheckComplete>
+                <CheckCompleteIcon icon={faCircleCheck} /> 확인
+              </CheckComplete>
+            ) : (
+              <DuplicateCheck
+                onClick={async () => {
+                  const check = await emailDuplicateCheck(inputValue.email);
+                  if (check) {
+                    alert("사용 가능한 이메일 주소입니다.");
+                    setCheckValue({ ...checkValue, emailCheck: check });
+                  } else {
+                    alert("이미 사용 중인 이메일입니다.");
+                  }
+                }}
+              >
+                중복 확인
+              </DuplicateCheck>
             )}
           </InputWrapper>
           <InputWrapper>
@@ -257,6 +300,32 @@ function Join() {
               onChange={handleChange}
               $isValidate={true}
             />
+            {!nickNameCheck && (
+              <ErrorMessage>
+                최소 5자 이상이며 "영문(소문자)", "_"만 사용 가능합니다
+              </ErrorMessage>
+            )}
+            {checkValue.nickNameCheck ? (
+              <CheckComplete>
+                <CheckCompleteIcon icon={faCircleCheck} /> 확인
+              </CheckComplete>
+            ) : (
+              <DuplicateCheck
+                onClick={async () => {
+                  const check = await nickNameDuplicateCheck(
+                    inputValue.nickName
+                  );
+                  if (check) {
+                    alert("사용 가능한 닉네임입니다.");
+                    setCheckValue({ ...checkValue, nickNameCheck: check });
+                  } else {
+                    alert("이미 사용 중인 닉네임입니다.");
+                  }
+                }}
+              >
+                중복 확인
+              </DuplicateCheck>
+            )}
           </InputWrapper>
           <AgreeTitle>약관 동의</AgreeTitle>
           <AgreeBox>
@@ -306,7 +375,7 @@ const ContentBox = styled.div`
 
 const TextLogo = styled.div`
   margin-bottom: 34px;
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 700;
 `;
 
@@ -396,7 +465,7 @@ const ValidationText = styled.div`
 
 const EyeSlashWrapper = styled.div`
   position: absolute;
-  top: 36px;
+  top: 34px;
   right: 10px;
 `;
 
@@ -436,6 +505,41 @@ const ErrorMessage = styled.div`
   color: #f50100;
   font-size: 12px;
   margin-top: 10px;
+`;
+
+const DuplicateCheck = styled.div`
+  position: absolute;
+  top: 32px;
+  right: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: rgba(1, 1, 1, 0.2);
+  color: #fff;
+  font-size: 10px;
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(1, 1, 1, 0.8);
+  }
+`;
+
+const CheckComplete = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  top: 32px;
+  right: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #1375ff;
+  color: #fff;
+  font-size: 10px;
+`;
+
+const CheckCompleteIcon = styled(FontAwesomeIcon)`
+  color: #fff;
+  font-size: 10px;
 `;
 
 const InputTitle = styled.div`
@@ -482,7 +586,7 @@ const AgreeText = styled.div`
   font-size: 12px;
 `;
 
-const JoinButton = styled.button<{ $disabled: boolean }>`
+const JoinButton = styled.button<{ $disabled: boolean | undefined }>`
   width: 100%;
   height: 48px;
   border: none;
@@ -504,21 +608,5 @@ const SpinnerIcon = styled(FontAwesomeIcon)`
   color: rgba(1, 1, 1, 0.8);
   font-size: 40px;
 `;
-
-// const NickNameCheck = styled.div`
-//   position: absolute;
-//   top: 32px;
-//   right: 10px;
-//   padding: 6px 12px;
-//   border-radius: 6px;
-//   background-color: rgba(1, 1, 1, 0.2);
-//   color: #fff;
-//   font-size: 12px;
-
-//   &:hover {
-//     cursor: pointer;
-//     background-color: rgba(1, 1, 1, 0.8);
-//   }
-// `;
 
 export default Join;

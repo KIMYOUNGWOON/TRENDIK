@@ -1,28 +1,29 @@
-import { useContext } from "react";
+import { ChangeEvent, useContext, useState } from "react";
 import styled from "styled-components";
 import { componentMount } from "../../styles/Animation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { useQuery } from "@tanstack/react-query";
-import { getUsers } from "../../api/api";
+import { getUsers } from "../../api/userApi";
 import Header from "../../components/Header";
 import UserListItem from "./components/UserListItem";
 import UserContext from "../../contexts/UserContext";
 
 function UserLookAround() {
   const { authUser } = useContext(UserContext);
+  const [inputValue, setInputValue] = useState("");
 
-  const result = useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      if (authUser) {
-        return await getUsers(authUser.userId);
-      }
-    },
-    enabled: !!authUser,
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value } = e.target;
+    setInputValue(value);
+  }
+
+  const { data } = useQuery({
+    queryKey: ["users", authUser.userId],
+    queryFn: getUsers,
   });
 
-  const users = result.data ? result.data : [];
+  const userList = Array.isArray(data) ? data : [];
 
   return (
     <Container>
@@ -30,10 +31,15 @@ function UserLookAround() {
       <ContentBox>
         <SearchBarBox>
           <SearchIcon icon={faMagnifyingGlass} />
-          <SearchInput type="text" placeholder="검색" />
+          <SearchInput
+            type="text"
+            placeholder="검색"
+            value={inputValue}
+            onChange={handleChange}
+          />
         </SearchBarBox>
         <UserListBox>
-          {users.map((user) => {
+          {userList.map((user) => {
             return <UserListItem key={user.userId} user={user} />;
           })}
         </UserListBox>
@@ -43,12 +49,11 @@ function UserLookAround() {
 }
 
 const Container = styled.div`
-  padding-top: 40px;
   animation: ${componentMount} 0.15s linear;
 `;
 
 const ContentBox = styled.div`
-  padding: 90px 30px 140px;
+  padding: 140px 30px 0;
   background-color: #fff;
 `;
 
@@ -60,7 +65,7 @@ const SearchBarBox = styled.div`
 const SearchIcon = styled(FontAwesomeIcon)`
   position: absolute;
   top: 10px;
-  left: 10px;
+  left: 18px;
   font-size: 18px;
   color: rgba(1, 1, 1, 0.4);
 `;
@@ -68,13 +73,17 @@ const SearchIcon = styled(FontAwesomeIcon)`
 const SearchInput = styled.input`
   width: 100%;
   height: 40px;
-  padding: 0 40px;
+  padding: 0 50px;
   border-radius: 8px;
   border: none;
   background-color: rgba(1, 1, 1, 0.1);
   color: rgba(1, 1, 1, 0.6);
   font-size: 16px;
   outline: none;
+
+  &::placeholder {
+    color: rgba(1, 1, 1, 0.3);
+  }
 `;
 
 const UserListBox = styled.div``;

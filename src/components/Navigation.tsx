@@ -14,6 +14,7 @@ interface Props {
 
 const Navigation: React.FC<Props> = ({ authUser }) => {
   const navigate = useNavigate();
+
   return (
     <Container>
       <IconWrapper>
@@ -21,17 +22,27 @@ const Navigation: React.FC<Props> = ({ authUser }) => {
           icon={faHouse}
           onClick={() => {
             navigate("/");
+            window.scrollTo(0, 0);
           }}
         />
         <NavIcon icon={faMagnifyingGlass} />
       </IconWrapper>
-      <UploadIcon icon={faCirclePlus} />
+      <UploadIcon
+        icon={faCirclePlus}
+        onClick={() => {
+          navigate("/posting");
+          window.scrollTo(0, 0);
+        }}
+      />
       <IconWrapper>
         <NavIcon icon={faBookmark} />
         <NavIcon
           icon={faUser}
           onClick={() => {
-            navigate(`/users/${authUser?.userId}`);
+            if (authUser) {
+              navigate(`/users/${authUser.userId}`);
+              window.scrollTo(0, 0);
+            }
           }}
         />
       </IconWrapper>

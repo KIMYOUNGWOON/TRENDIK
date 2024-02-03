@@ -6,7 +6,7 @@ import Header from "../../components/Header";
 import AccountEditModal from "./components/AccountEditModal";
 
 function AccountInfo() {
-  const { user, setUser } = useContext(UserContext);
+  const { authUser, setAuthUser } = useContext(UserContext);
   const [modalStatus, setModalStatus] = useState(false);
   const [selected, setSelected] = useState("");
 
@@ -26,7 +26,7 @@ function AccountInfo() {
         <JoinDate>가입일자 : 2024/01/24 18:26:06</JoinDate>
         <InputWrapper>
           <Label>이름</Label>
-          <Input disabled value={user.name || ""} />
+          <Input disabled value={authUser.name || ""} />
           <NamedEdit
             onClick={() => {
               editModalOpen("name");
@@ -37,7 +37,7 @@ function AccountInfo() {
         </InputWrapper>
         <InputWrapper>
           <Label>이메일</Label>
-          <Input disabled value={user.email || ""} />
+          <Input disabled value={authUser.email || ""} />
         </InputWrapper>
         <InputWrapper>
           <Label>비밀번호</Label>
@@ -57,8 +57,8 @@ function AccountInfo() {
           <AccountEditModal
             selected={selected}
             editModalClose={editModalClose}
-            setUser={setUser}
-            name={user.name}
+            setAuthUser={setAuthUser}
+            name={authUser.name}
           />
         )}
       </ContentBox>
@@ -67,19 +67,18 @@ function AccountInfo() {
 }
 
 const Container = styled.div`
-  padding: 40px 0 140px;
   animation: ${componentMount} 0.15s linear;
 `;
 
-const JoinDate = styled.div`
-  margin-bottom: 30px;
-  color: rgba(1, 1, 1, 0.5);
-  font-size: 14px;
+const ContentBox = styled.div`
+  padding: 140px 30px 0;
+  background-color: #fff;
 `;
 
-const ContentBox = styled.div`
-  position: relative;
-  padding: 100px 40px 0;
+const JoinDate = styled.div`
+  margin-bottom: 40px;
+  color: rgba(1, 1, 1, 0.5);
+  font-size: 14px;
 `;
 
 const InputWrapper = styled.div`

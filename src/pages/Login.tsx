@@ -1,5 +1,5 @@
 import { ChangeEvent, FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
@@ -8,7 +8,7 @@ import { faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import { faEye } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useMutation } from "@tanstack/react-query";
-import { authSignIn } from "../api/api";
+import { authSignIn } from "../api/userApi";
 
 const INPUT_VALUE = {
   email: "",
@@ -99,7 +99,15 @@ function Login() {
         </Form>
         <ForgetPassword>비밀번호를 잊으셨나요?</ForgetPassword>
         <UserConfirm>
-          회원이 아니신가요? <GoToJoin to="/join">지금 가입하세요</GoToJoin>
+          회원이 아니신가요?{" "}
+          <GoToJoin
+            onClick={() => {
+              navigate("/join");
+              window.scrollTo(0, 0);
+            }}
+          >
+            지금 가입하세요
+          </GoToJoin>
         </UserConfirm>
         <LinkWrapper>
           {LINK_LIST.map((link, index) => {
@@ -134,13 +142,13 @@ const ContentBox = styled.div`
 
 const Title = styled.div`
   margin-bottom: 160px;
-  font-size: 24px;
+  font-size: 26px;
   text-align: center;
 `;
 
 const TextLogo = styled.div`
   margin-bottom: 34px;
-  font-size: 26px;
+  font-size: 34px;
   font-weight: 700;
 `;
 
@@ -263,8 +271,13 @@ const UserConfirm = styled.div`
   margin-bottom: 250px;
 `;
 
-const GoToJoin = styled(Link)`
+const GoToJoin = styled.span`
   color: #1375ff;
+  text-decoration: underline;
+
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 const LinkWrapper = styled.div`

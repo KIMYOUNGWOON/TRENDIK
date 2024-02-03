@@ -7,32 +7,33 @@ import styled from "styled-components";
 import TopBar from "./TopBar";
 import Navigation from "./Navigation";
 import UserContext from "../contexts/UserContext";
-import { getUser } from "../api/api";
+import { getUser } from "../api/userApi";
+import PageLoading from "./PageLoading";
 
-function RootLayout() {
-  const [authUser, setAuthUser] = useState<DocumentData | undefined>(undefined);
+function MainLayout() {
+  const [authUser, setAuthUser] = useState<DocumentData | undefined>();
+  const [authLoading, setAuthLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        setAuthUser(await getUser(user.uid));
+        const userData = await getUser(user.uid);
+        setAuthUser(userData);
       } else {
         navigate("/login");
       }
+      setAuthLoading(false);
     });
-
     return () => {
       unsubscribe();
     };
   }, [navigate]);
 
   return (
-    <UserContext.Provider value={{ authUser, setAuthUser }}>
+    <UserContext.Provider value={{ authUser, setAuthUser, authLoading }}>
       <TopBar />
-      <Container>
-        <Outlet />
-      </Container>
+      <Container>{authLoading ? <PageLoading /> : <Outlet />}</Container>
       <Navigation authUser={authUser} />
     </UserContext.Provider>
   );
@@ -40,10 +41,10 @@ function RootLayout() {
 
 const Container = styled.div`
   width: 500px;
-  height: 100vh;
+  min-height: 100vh;
   margin: 0 auto;
   background-color: #fff;
   overflow-x: hidden;
 `;
 
-export default RootLayout;
+export default MainLayout;

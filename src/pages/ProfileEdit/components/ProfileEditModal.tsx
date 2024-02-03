@@ -2,10 +2,11 @@ import styled from "styled-components";
 import { editModalOpen } from "../../../styles/Animation";
 import { ChangeEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { checkNickName, updateProfile } from "../../../api/api";
+import { checkNickName, updateProfile } from "../../../api/userApi";
 import { auth } from "../../../firebase";
 import { DocumentData } from "firebase/firestore";
 import LoadingSpinner from "../../../components/LoadingSpinner";
+import { nickNameRegex } from "../../../validation";
 
 interface Props {
   selected: string;
@@ -99,6 +100,9 @@ const ProfileEditModal: React.FC<Props> = ({
     });
   }
 
+  const nickNameCheck =
+    nickNameRegex.test(inputValue.nickName) || inputValue.nickName.length === 0;
+
   return (
     <Container>
       <Header>
@@ -115,6 +119,11 @@ const ProfileEditModal: React.FC<Props> = ({
             value={inputValue.nickName}
             onChange={handleChange}
           />
+          {!nickNameCheck && (
+            <ErrorMessage>
+              최소 5자 이상이며 "영문(소문자)", "_"만 사용 가능합니다
+            </ErrorMessage>
+          )}
         </InputWrapper>
       ) : (
         <InputWrapper>
@@ -203,7 +212,7 @@ const InputWrapper = styled.div`
 
 const Label = styled.label`
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: rgba(1, 1, 1, 0.7);
   font-size: 14px;
   font-weight: 500;
@@ -216,13 +225,19 @@ const Label = styled.label`
 const Input = styled.input`
   display: block;
   width: 100%;
-  height: 40px;
+  height: 44px;
   padding: 0 60px 0 16px;
   border: 1px solid rgba(1, 1, 1, 0.3);
   border-radius: 8px;
   color: #494949;
   outline: none;
   transition: 0.4s;
+`;
+
+const ErrorMessage = styled.div`
+  color: #f50100;
+  font-size: 12px;
+  margin-top: 10px;
 `;
 
 const TextArea = styled.textarea`
@@ -241,8 +256,8 @@ const SaveButton = styled.div`
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 40px;
-  border-radius: 20px;
+  height: 44px;
+  border-radius: 8px;
   background-color: #222;
   color: #fff;
   font-size: 14px;

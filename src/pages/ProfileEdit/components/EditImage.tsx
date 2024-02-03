@@ -4,29 +4,21 @@ import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { DocumentData } from "firebase/firestore";
-import { ImageUpload } from "../../../api/api";
+import { ImageUpload, imageReset } from "../../../api/userApi";
 
 interface Props {
-  profileImage: string;
-  coverImage: string;
+  authUser: DocumentData | undefined;
   setAuthUser: (user: DocumentData | undefined) => void;
 }
 
-const EditImage: React.FC<Props> = ({
-  profileImage,
-  coverImage,
-  setAuthUser,
-}) => {
+const EditImage: React.FC<Props> = ({ authUser, setAuthUser }) => {
   const [profileImgFile, setProfileImgFile] = useState<File | null>(null);
   const [coverImgFile, setCoverImgFile] = useState<File | null>(null);
-  const [profileImagePreview, setProfileImagePreview] = useState<string | null>(
-    null
-  );
-  const [coverImagePreview, setCoverImagePreview] = useState<string | null>(
-    null
-  );
+  const [profileImagePreview, setProfileImagePreview] = useState<string>("");
+  const [coverImagePreview, setCoverImagePreview] = useState<string>("");
 
   function profileImgChange(e: ChangeEvent<HTMLInputElement>) {
     const { files } = e.target;
@@ -65,20 +57,48 @@ const EditImage: React.FC<Props> = ({
     };
     imageUploadMutation.mutate(updateFile, {
       onSuccess: () => {
-        setProfileImagePreview(null);
-        setCoverImagePreview(null);
+        setProfileImagePreview("");
+        setCoverImagePreview("");
         alert("정상적으로 변경되었습니다.");
       },
     });
   }
 
+  const imageResetMutation = useMutation({
+    mutationFn: async () => {
+      if (authUser) {
+        const { profileImage, coverImage } = authUser;
+        const updatedUser = await imageReset(profileImage, coverImage);
+        setAuthUser(updatedUser);
+      }
+    },
+  });
+
+  function handleReset() {
+    const result = confirm("기본 프로필로 변경됩니다. 진행하시겠습니까?");
+    if (result) {
+      imageResetMutation.mutate();
+    }
+  }
+
   return (
-    <Container $selected={coverImagePreview ? coverImagePreview : coverImage}>
-      {(coverImagePreview || coverImage) && <BlackBackground />}
+    <Container
+      $selected={coverImagePreview ? coverImagePreview : authUser?.coverImage}
+    >
+      {(coverImagePreview || authUser?.coverImage) && <BlackBackground />}
+      {(authUser?.profileImage || authUser?.coverImage) && (
+        <ResetIcon
+          icon={faArrowRotateLeft}
+          onClick={handleReset}
+          $isExisted={authUser?.coverImage || coverImagePreview}
+        />
+      )}
       <ProfileImgWrapper
-        $selected={profileImagePreview ? profileImagePreview : profileImage}
+        $selected={
+          profileImagePreview ? profileImagePreview : authUser?.profileImage
+        }
       >
-        {!profileImage && !profileImagePreview && (
+        {!authUser?.profileImage && !profileImagePreview && (
           <ProfileIcon icon={faCircleUser} />
         )}
       </ProfileImgWrapper>
@@ -103,16 +123,20 @@ const EditImage: React.FC<Props> = ({
       {(profileImagePreview || coverImagePreview) &&
         (imageUploadMutation.isPending ? (
           <LoadingWrapper>
-            <SpinnerIcon icon={faSpinner} spinPulse />
+            <SpinnerIcon
+              icon={faSpinner}
+              $isExisted={authUser?.coverImage || coverImagePreview}
+              spinPulse
+            />
           </LoadingWrapper>
         ) : (
-          <BtnWrapper>
+          <BtnWrapper $isExisted={authUser?.coverImage || coverImagePreview}>
             <CancelBtn
               onClick={() => {
                 setProfileImgFile(null);
                 setCoverImgFile(null);
-                setProfileImagePreview(null);
-                setCoverImagePreview(null);
+                setProfileImagePreview("");
+                setCoverImagePreview("");
               }}
             >
               취소
@@ -129,7 +153,7 @@ const Container = styled.div<{ $selected: string | null }>`
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 300px;
+  height: 440px;
   margin-bottom: 40px;
   padding-bottom: 40px;
   background-image: ${({ $selected }) =>
@@ -137,7 +161,7 @@ const Container = styled.div<{ $selected: string | null }>`
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-color: rgba(1, 1, 1, 0.2);
+  background-color: rgba(1, 1, 1, 0.1);
 `;
 
 const BlackBackground = styled.div`
@@ -147,13 +171,25 @@ const BlackBackground = styled.div`
   background-color: rgba(1, 1, 1, 0.5);
 `;
 
+const ResetIcon = styled(FontAwesomeIcon)<{ $isExisted: string }>`
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  color: ${({ $isExisted }) => ($isExisted !== "" ? "#fff" : "#222")};
+  font-size: 24px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
 const ProfileImgWrapper = styled.div<{ $selected: string }>`
   display: flex;
   justify-content: center;
   align-items: center;
   position: absolute;
-  width: 110px;
-  height: 110px;
+  width: 100px;
+  height: 100px;
   border: 4px solid #fff;
   border-radius: 50%;
   background-image: ${({ $selected }) =>
@@ -166,8 +202,8 @@ const ProfileImgWrapper = styled.div<{ $selected: string }>`
 
 const ProfileIcon = styled(FontAwesomeIcon)`
   position: absolute;
-  color: rgba(1, 1, 1, 0.3);
-  font-size: 100px;
+  color: rgba(1, 1, 1, 0.2);
+  font-size: 90px;
 `;
 
 const ProfileImgEditBtn = styled.div`
@@ -176,7 +212,7 @@ const ProfileImgEditBtn = styled.div`
   align-items: center;
   position: absolute;
   bottom: 42px;
-  right: 200px;
+  right: 190px;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -203,25 +239,22 @@ const CoverImgEditBtn = styled(ProfileImgEditBtn)`
   right: 24px;
 `;
 
-const BtnWrapper = styled.div`
+const BtnWrapper = styled.div<{ $isExisted: string }>`
   display: flex;
   gap: 20px;
   position: absolute;
   bottom: 20px;
   right: 20px;
+  color: ${({ $isExisted }) => ($isExisted !== "" ? "#fff" : "#222")};
 `;
 
 const CancelBtn = styled.div`
-  color: #fff;
-
   &:hover {
     cursor: pointer;
   }
 `;
 
 const SaverBtn = styled.div`
-  color: #fff;
-
   &:hover {
     cursor: pointer;
   }
@@ -237,8 +270,8 @@ const LoadingWrapper = styled.div`
   text-align: center;
 `;
 
-const SpinnerIcon = styled(FontAwesomeIcon)`
-  color: #fff;
+const SpinnerIcon = styled(FontAwesomeIcon)<{ $isExisted: string }>`
+  color: ${({ $isExisted }) => ($isExisted !== "" ? "#fff" : "#222")};
   font-size: 40px;
 `;
 

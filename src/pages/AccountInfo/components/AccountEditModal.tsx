@@ -4,7 +4,7 @@ import { DocumentData, doc, updateDoc } from "firebase/firestore";
 import { ChangeEvent, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { auth, db } from "../../../firebase";
-import { getUser } from "../../../api/api";
+import { getUser } from "../../../api/userApi";
 import LoadingSpinner from "../../../components/LoadingSpinner";
 import { passwordRegex } from "../../../validation";
 import { updatePassword } from "firebase/auth";
@@ -13,14 +13,14 @@ interface Props {
   selected: string;
   name: string;
   editModalClose: () => void;
-  setUser: (value: React.SetStateAction<DocumentData | undefined>) => void;
+  setAuthUser: (value: React.SetStateAction<DocumentData | undefined>) => void;
 }
 
 const AccountEditModal: React.FC<Props> = ({
   selected,
   name,
   editModalClose,
-  setUser,
+  setAuthUser,
 }) => {
   const [nameValue, setNameValue] = useState(name);
   const [passwordValue, setPasswordValue] = useState({
@@ -52,7 +52,7 @@ const AccountEditModal: React.FC<Props> = ({
         if (user) {
           const userRef = doc(db, "users", user.uid);
           await updateDoc(userRef, { name });
-          setUser(await getUser(user.uid));
+          setAuthUser(await getUser(user.uid));
         }
       } catch (e) {
         console.log(e);

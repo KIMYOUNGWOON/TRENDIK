@@ -5,3 +5,4 @@ export const passwordLengthRegex = /^.{8,}$/;
 export const englishLetterRegex = /[a-zA-Z]/;
 export const containNumberRegex = /\d/;
 export const containsSpecialCharacterRegex = /[!@#$%^&*()_+{}[\]:;<>,.?~\\/-]/;
+export const nickNameRegex = /^[a-z_]{5,}$/;
