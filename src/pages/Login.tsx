@@ -30,18 +30,21 @@ function Login() {
   const loginMutation = useMutation({
     mutationFn: (value: { email: string; password: string }) =>
       authSignIn(value),
+
+    onSuccess: () => {
+      navigate("/");
+    },
+
+    onError: (e) => {
+      if (typeof e === "string") {
+        alert("이메일 또는 비밀번호를 확인해주세요");
+      }
+    },
   });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    loginMutation.mutate(inputValue, {
-      onSuccess: () => navigate("/"),
-      onError: (e) => {
-        if (typeof e === "string") {
-          alert("이메일 또는 비밀번호를 확인해주세요");
-        }
-      },
-    });
+    loginMutation.mutate(inputValue);
   }
 
   const ENABLE_BUTTON =

@@ -10,7 +10,7 @@ import UserListItem from "./components/UserListItem";
 import UserContext from "../../contexts/UserContext";
 
 function UserLookAround() {
-  const { authUser } = useContext(UserContext);
+  const { authUserId } = useContext(UserContext);
   const [inputValue, setInputValue] = useState("");
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -18,8 +18,8 @@ function UserLookAround() {
     setInputValue(value);
   }
 
-  const { data } = useQuery({
-    queryKey: ["users", authUser.userId],
+  const { data, isLoading: usersLoading } = useQuery({
+    queryKey: ["users", authUserId],
     queryFn: getUsers,
   });
 
@@ -40,7 +40,14 @@ function UserLookAround() {
         </SearchBarBox>
         <UserListBox>
           {userList.map((user) => {
-            return <UserListItem key={user.userId} user={user} />;
+            return (
+              <UserListItem
+                key={user.userId}
+                user={user}
+                usersLoading={usersLoading}
+                authUserId={authUserId}
+              />
+            );
           })}
         </UserListBox>
       </ContentBox>

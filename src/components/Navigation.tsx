@@ -5,15 +5,17 @@ import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faBookmark } from "@fortawesome/free-regular-svg-icons";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-import { DocumentData } from "firebase/firestore";
+import { useLocation, useNavigate } from "react-router-dom";
 
 interface Props {
-  authUser: DocumentData | undefined;
+  authUserId: string;
 }
 
-const Navigation: React.FC<Props> = ({ authUser }) => {
+const Navigation: React.FC<Props> = ({ authUserId }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const currentPathName = `/users/${authUserId}`;
 
   return (
     <Container>
@@ -39,10 +41,12 @@ const Navigation: React.FC<Props> = ({ authUser }) => {
         <NavIcon
           icon={faUser}
           onClick={() => {
-            if (authUser) {
-              navigate(`/users/${authUser.userId}`);
-              window.scrollTo(0, 0);
+            if (currentPathName === location.pathname) {
+              navigate(`/users/${authUserId}`, { replace: true });
+            } else {
+              navigate(`/users/${authUserId}`);
             }
+            window.scrollTo(0, 0);
           }}
         />
       </IconWrapper>

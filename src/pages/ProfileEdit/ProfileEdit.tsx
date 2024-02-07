@@ -5,27 +5,35 @@ import { componentMount } from "../../styles/Animation";
 import UserContext from "../../contexts/UserContext";
 import ProfileEditModal from "./components/ProfileEditModal";
 import EditImage from "./components/EditImage";
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "../../api/userApi";
 
 function ProfileEdit() {
-  const { authUser, setAuthUser } = useContext(UserContext);
-  const [modalStatus, setModalStatus] = useState(false);
+  const { authUserId } = useContext(UserContext);
+  const [isOpened, setIsOpened] = useState(false);
   const [selected, setSelected] = useState("");
 
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: () => getUser(authUserId),
+    enabled: !!authUserId,
+  });
+
   function editModalOpen(target: string) {
-    setModalStatus((prev) => !prev);
+    setIsOpened((prev) => !prev);
     setSelected(target);
   }
 
   function editModalClose() {
-    setModalStatus((prev) => !prev);
+    setIsOpened((prev) => !prev);
   }
 
   return (
     <Container>
       <Header title="프로필 설정" />
       <ContentBox>
-        <EditImage authUser={authUser} setAuthUser={setAuthUser} />
-        <ProfileInfoBox>
+        <EditImage authUser={authUser} />
+        <ProfileInfoEditBox>
           <InputWrapper>
             <Label>닉네임</Label>
             <Input value={authUser?.nickName || ""} disabled />
@@ -48,17 +56,15 @@ function ProfileEdit() {
               변경
             </BioEditBtn>
           </InputWrapper>
-        </ProfileInfoBox>
-        {modalStatus && <ModalBackground onClick={editModalClose} />}
-        {modalStatus && (
-          <ProfileEditModal
-            selected={selected}
-            editModalClose={editModalClose}
-            nickName={authUser?.nickName}
-            bio={authUser?.bio}
-            setAuthUser={setAuthUser}
-          />
-        )}
+        </ProfileInfoEditBox>
+        {isOpened && <ModalBackground onClick={editModalClose} />}
+        <ProfileEditModal
+          isOpened={isOpened}
+          selected={selected}
+          editModalClose={editModalClose}
+          nickName={authUser?.nickName}
+          bio={authUser?.bio}
+        />
       </ContentBox>
     </Container>
   );
@@ -72,9 +78,10 @@ const ContentBox = styled.div`
   position: relative;
   padding: 100px 0;
   background-color: #fff;
+  overflow: hidden;
 `;
 
-const ProfileInfoBox = styled.form`
+const ProfileInfoEditBox = styled.div`
   padding: 0 40px;
 `;
 

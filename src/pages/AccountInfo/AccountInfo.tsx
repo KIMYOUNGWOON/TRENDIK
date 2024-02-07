@@ -4,19 +4,27 @@ import { componentMount } from "../../styles/Animation";
 import UserContext from "../../contexts/UserContext";
 import Header from "../../components/Header";
 import AccountEditModal from "./components/AccountEditModal";
+import { useQuery } from "@tanstack/react-query";
+import { getUser } from "../../api/userApi";
 
 function AccountInfo() {
-  const { authUser, setAuthUser } = useContext(UserContext);
-  const [modalStatus, setModalStatus] = useState(false);
+  const { authUserId } = useContext(UserContext);
+  const [isOpened, setIsOpened] = useState(false);
   const [selected, setSelected] = useState("");
 
+  const { data: authUser } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: () => getUser(authUserId),
+    enabled: !!authUserId,
+  });
+
   function editModalOpen(target: string) {
-    setModalStatus((prev) => !prev);
+    setIsOpened((prev) => !prev);
     setSelected(target);
   }
 
   function editModalClose() {
-    setModalStatus((prev) => !prev);
+    setIsOpened((prev) => !prev);
   }
 
   return (
@@ -26,7 +34,7 @@ function AccountInfo() {
         <JoinDate>가입일자 : 2024/01/24 18:26:06</JoinDate>
         <InputWrapper>
           <Label>이름</Label>
-          <Input disabled value={authUser.name || ""} />
+          <Input disabled value={authUser?.name || ""} />
           <NamedEdit
             onClick={() => {
               editModalOpen("name");
@@ -37,7 +45,7 @@ function AccountInfo() {
         </InputWrapper>
         <InputWrapper>
           <Label>이메일</Label>
-          <Input disabled value={authUser.email || ""} />
+          <Input disabled value={authUser?.email || ""} />
         </InputWrapper>
         <InputWrapper>
           <Label>비밀번호</Label>
@@ -52,15 +60,13 @@ function AccountInfo() {
         </InputWrapper>
 
         <DeleteAccount>회원탈퇴</DeleteAccount>
-        {modalStatus && <ModalBackground onClick={editModalClose} />}
-        {modalStatus && (
-          <AccountEditModal
-            selected={selected}
-            editModalClose={editModalClose}
-            setAuthUser={setAuthUser}
-            name={authUser.name}
-          />
-        )}
+        {isOpened && <ModalBackground onClick={editModalClose} />}
+        <AccountEditModal
+          isOpened={isOpened}
+          selected={selected}
+          editModalClose={editModalClose}
+          name={authUser?.name}
+        />
       </ContentBox>
     </Container>
   );

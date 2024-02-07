@@ -8,6 +8,7 @@ import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser } from "../../api/userApi";
@@ -20,29 +21,34 @@ import {
 } from "../../api/connectApi";
 import { useContext } from "react";
 import UserContext from "../../contexts/UserContext";
+import FeedList from "./components/FeedList";
+import { getUserFeeds } from "../../api/postApi";
+import UserHomeSkeletonUi from "./components/UserHomeSkeletonUi";
 
 function UserHome() {
-  const { authUser } = useContext(UserContext);
+  const { authUserId } = useContext(UserContext);
   const { userId } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const myPage = authUser.userId === userId;
+  const myPage = authUserId === userId;
 
   const { data: user } = useQuery({
     queryKey: ["user", userId],
     queryFn: () => {
-      return getUser(userId);
+      if (userId) {
+        return getUser(userId);
+      }
     },
     enabled: !!userId,
   });
 
-  const { data: followers } = useQuery({
+  const { data: followers, isLoading: followerLoading } = useQuery({
     queryKey: ["followers", userId],
     queryFn: async () => await getFollowers(userId),
     enabled: !!userId,
   });
 
-  const { data: followings } = useQuery({
+  const { data: followings, isLoading: followingLoading } = useQuery({
     queryKey: ["followings", userId],
     queryFn: async () => await getFollowings(userId),
     enabled: !!userId,
@@ -51,6 +57,13 @@ function UserHome() {
   const { data: followStatus } = useQuery({
     queryKey: ["followStatus", userId],
     queryFn: async () => await checkFollowStatus(userId),
+    enabled: !myPage,
+  });
+
+  const { data: feeds, isLoading: feedsLoading } = useQuery({
+    queryKey: ["feeds", userId],
+    queryFn: () => getUserFeeds(userId),
+    enabled: !!userId,
   });
 
   const updateFollowStatus = (newStatus: boolean | undefined) => {
@@ -121,6 +134,13 @@ function UserHome() {
     unFollowMutation.mutate();
   }
 
+  // const isLoading =
+  //   userLoading ||
+  //   followerLoading ||
+  //   followingLoading ||
+  //   feedsLoading ||
+  //   followStatusLoading;
+
   return (
     <Container>
       <ContentBox>
@@ -138,7 +158,7 @@ function UserHome() {
             <ProfileInfoWrapper>
               <ProfileImageWrapper>
                 {user?.profileImage ? (
-                  <ProfileImage src={user?.profileImage} />
+                  <ProfileImage $profileImage={user?.profileImage} />
                 ) : (
                   <ProfileIcon icon={faCircleUser} />
                 )}
@@ -179,7 +199,11 @@ function UserHome() {
         </ProfileBox>
         <CountBox>
           <CountWrapper>
-            <CountNumber>0</CountNumber>
+            {feedsLoading ? (
+              <SpinnerIcon icon={faSpinner} spinPulse />
+            ) : (
+              <CountNumber>{feeds?.length}</CountNumber>
+            )}
             <CountTitle>게시물</CountTitle>
           </CountWrapper>
           <CountWrapper
@@ -187,7 +211,11 @@ function UserHome() {
               navigate(`/users/${userId}/follower`);
             }}
           >
-            <CountNumber>{followers?.length}</CountNumber>
+            {followerLoading ? (
+              <SpinnerIcon icon={faSpinner} spinPulse />
+            ) : (
+              <CountNumber>{followers?.length}</CountNumber>
+            )}
             <CountTitle>팔로워</CountTitle>
           </CountWrapper>
           <CountWrapper
@@ -195,10 +223,15 @@ function UserHome() {
               navigate(`/users/${userId}/following`);
             }}
           >
-            <CountNumber>{followings?.length}</CountNumber>
+            {followingLoading ? (
+              <SpinnerIcon icon={faSpinner} spinPulse />
+            ) : (
+              <CountNumber>{followings?.length}</CountNumber>
+            )}
             <CountTitle>팔로잉</CountTitle>
           </CountWrapper>
         </CountBox>
+        {feedsLoading ? <UserHomeSkeletonUi /> : <FeedList feeds={feeds} />}
       </ContentBox>
     </Container>
   );
@@ -210,6 +243,7 @@ const Container = styled.div`
 
 const ContentBox = styled.div`
   padding-top: 40px;
+  padding-bottom: 70px;
   background-color: #fff;
 `;
 
@@ -267,10 +301,13 @@ const ProfileImageWrapper = styled.div`
   background-color: #fff;
 `;
 
-const ProfileImage = styled.img`
+const ProfileImage = styled.div<{ $profileImage: string }>`
   width: 74px;
   height: 74px;
   border-radius: 50%;
+  background-image: url(${({ $profileImage }) => $profileImage});
+  background-size: cover;
+  background-position: center;
 `;
 
 const ProfileIcon = styled(FontAwesomeIcon)`
@@ -366,6 +403,11 @@ const CountTitle = styled.div`
 const CountNumber = styled.div`
   font-size: 20px;
   font-weight: 600;
+`;
+
+const SpinnerIcon = styled(FontAwesomeIcon)`
+  color: rgba(1, 1, 1, 0.8);
+  font-size: 20px;
 `;
 
 export default UserHome;

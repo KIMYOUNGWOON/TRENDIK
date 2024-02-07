@@ -8,19 +8,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { checkFollowStatus, follow, unFollow } from "../../../api/connectApi";
 import SkeletonUi from "./SkeletonUi";
 import { DocumentData } from "firebase/firestore";
-import { useContext } from "react";
-import UserContext from "../../../contexts/UserContext";
 
 interface Props {
   user: DocumentData;
+  usersLoading?: boolean;
+  authUserId?: string;
 }
 
-const UserListItem: React.FC<Props> = ({ user }) => {
-  const { authUser } = useContext(UserContext);
+const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const { data: followStatus, isLoading } = useQuery({
+  const { data, isLoading: followStatusLoading } = useQuery({
     queryKey: ["followStatus", user.userId],
     queryFn: async () => await checkFollowStatus(user.userId),
   });
@@ -93,7 +92,7 @@ const UserListItem: React.FC<Props> = ({ user }) => {
     unFollowMutation.mutate();
   }
 
-  if (isLoading) {
+  if (followStatusLoading || usersLoading || authUserId === "") {
     return <SkeletonUi />;
   }
 
@@ -111,8 +110,8 @@ const UserListItem: React.FC<Props> = ({ user }) => {
         )}
         <NickName>{user.nickName}</NickName>
       </ProfileWrapper>
-      {authUser.userId !== user.userId &&
-        (followStatus ? (
+      {authUserId !== user.userId &&
+        (data ? (
           <UnFollowBtn onClick={handleUnFollow}>
             <UnFollowIcon icon={faCircleCheck} />
             <UnFollowText>팔로잉</UnFollowText>

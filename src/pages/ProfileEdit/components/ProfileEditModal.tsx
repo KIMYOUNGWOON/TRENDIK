@@ -1,27 +1,25 @@
 import styled from "styled-components";
-import { editModalOpen } from "../../../styles/Animation";
-import { ChangeEvent, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { checkNickName, updateProfile } from "../../../api/userApi";
 import { auth } from "../../../firebase";
-import { DocumentData } from "firebase/firestore";
 import LoadingSpinner from "../../../components/LoadingSpinner";
 import { nickNameRegex } from "../../../validation";
 
 interface Props {
+  isOpened: boolean;
   selected: string;
   editModalClose: () => void;
   nickName: string;
   bio: string;
-  setAuthUser: (value: React.SetStateAction<DocumentData | undefined>) => void;
 }
 
 const ProfileEditModal: React.FC<Props> = ({
+  isOpened,
   selected,
   editModalClose,
   nickName,
   bio,
-  setAuthUser,
 }) => {
   const initialValue = {
     nickName,
@@ -30,6 +28,11 @@ const ProfileEditModal: React.FC<Props> = ({
   const [inputValue, setInputValue] = useState(initialValue);
   const nickNameDiff = nickName !== inputValue.nickName;
   const bioDiff = bio !== inputValue.bio;
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setInputValue({ nickName, bio });
+  }, [nickName, bio]);
 
   function handleChange(
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,9 +49,12 @@ const ProfileEditModal: React.FC<Props> = ({
       value: string | undefined;
     }) => {
       const updatedUser = await updateProfile(data);
-      if (updatedUser) {
-        setAuthUser(updatedUser);
-      }
+      return updatedUser;
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["authUser"], updatedUser);
+      alert("정상적으로 변경되었습니다.");
+      editModalClose();
     },
   });
 
@@ -61,12 +67,7 @@ const ProfileEditModal: React.FC<Props> = ({
         key: "nickName",
         value: inputValue.nickName,
       };
-      nickNameEditMutation.mutate(updateData, {
-        onSuccess: () => {
-          alert("정상적으로 변경되었습니다.");
-          editModalClose();
-        },
-      });
+      nickNameEditMutation.mutate(updateData);
     } else {
       alert("이미 사용 중인 닉네임입니다.");
     }
@@ -79,9 +80,12 @@ const ProfileEditModal: React.FC<Props> = ({
       value: string | undefined;
     }) => {
       const updatedUser = await updateProfile(data);
-      if (updatedUser) {
-        setAuthUser(updatedUser);
-      }
+      return updatedUser;
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["authUser"], updatedUser);
+      alert("정상적으로 변경되었습니다.");
+      editModalClose();
     },
   });
 
@@ -92,19 +96,14 @@ const ProfileEditModal: React.FC<Props> = ({
       key: "bio",
       value: inputValue.bio,
     };
-    bioEditMutation.mutate(updateData, {
-      onSuccess: () => {
-        alert("정상적으로 변경되었습니다.");
-        editModalClose();
-      },
-    });
+    bioEditMutation.mutate(updateData);
   }
 
   const nickNameCheck =
     nickNameRegex.test(inputValue.nickName) || inputValue.nickName.length === 0;
 
   return (
-    <Container>
+    <Container $isOpened={isOpened}>
       <Header>
         <Title>{selected === "nickName" ? "닉네임" : "소개"} 변경</Title>
         <CancelBtn onClick={editModalClose}>취소</CancelBtn>
@@ -170,24 +169,25 @@ const ProfileEditModal: React.FC<Props> = ({
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ $isOpened: boolean }>`
   position: fixed;
   left: 50%;
-  right: 0;
   bottom: 70px;
   width: 500px;
-  height: 410px;
-  padding: 30px;
+  height: ${({ $isOpened }) => ($isOpened ? "410px" : 0)};
+  padding: 0 30px;
   background-color: #fff;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   transform: translateX(-50%);
-  animation: ${editModalOpen} 0.2s linear;
+  transition: 0.3s;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
   position: relative;
-  margin-bottom: 40px;
+  padding: 30px;
+  margin-bottom: 10px;
 `;
 
 const Title = styled.div`
@@ -197,8 +197,8 @@ const Title = styled.div`
 
 const CancelBtn = styled.div`
   position: absolute;
-  top: 0;
-  right: 10px;
+  top: 30px;
+  right: 0;
 
   &:hover {
     cursor: pointer;

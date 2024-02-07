@@ -1,7 +1,6 @@
-import { ChangeEvent, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
-import { auth } from "../../firebase";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImages } from "@fortawesome/free-solid-svg-icons";
@@ -10,8 +9,7 @@ import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { componentMount } from "../../styles/Animation";
 import Header from "../../components/Header";
-import { PostData } from "../../api/types";
-import { uploadFeed } from "../../api/postApi";
+import { editFeed, getFeed } from "../../api/postApi";
 
 const GENDER = [
   { id: 1, gender: "man", text: "남성" },
@@ -35,15 +33,30 @@ const initialValue = {
   gender: "",
   style: "",
 };
-
-const PostUpload = () => {
+function FeedEdit() {
   const navigate = useNavigate();
   const [postValue, setPostValue] = useState(initialValue);
   const [imageFileList, setImageFileList] = useState<File[]>([]);
   const [previewUrlList, setPreviewUrlList] = useState<string[]>([]);
-  const isChecked =
-    Object.values(postValue).every((value) => Boolean(value)) &&
-    imageFileList.length !== 0;
+  const { postId } = useParams();
+  const queryClient = useQueryClient();
+
+  const { data } = useQuery({
+    queryKey: ["feedEdit", postId],
+    queryFn: () => getFeed(postId),
+  });
+
+  useEffect(() => {
+    if (data) {
+      const postData = {
+        content: data.content,
+        gender: data.gender,
+        style: data.style,
+      };
+      setPostValue(postData);
+      setPreviewUrlList(data.feedImages);
+    }
+  }, [data]);
 
   function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
     const { name, value } = e.target;
@@ -80,28 +93,31 @@ const PostUpload = () => {
     setPreviewUrlList(removedUrlList);
   }
 
-  const feedUploadMutation = useMutation({
-    mutationFn: (postData: PostData) => uploadFeed(postData),
-    onSuccess: () => {
-      const userId = auth.currentUser?.uid;
-      navigate(`/users/${userId}`);
+  const feedEditMutation = useMutation({
+    mutationFn: async () => {
+      const postData = {
+        ...postValue,
+        imageFiles: imageFileList,
+        preImagesCount: data?.feedImages.length,
+      };
+      const updatedFeed = await editFeed(postId, postData);
+      return updatedFeed;
+    },
+    onSuccess: (updatedFeed) => {
+      queryClient.setQueryData(["feed", postId], updatedFeed);
+      navigate(`/feeds/${postId}`, { replace: true });
+      window.scrollTo(0, 0);
     },
   });
 
-  const handleUpload = () => {
-    const postData = { ...postValue, imageFiles: imageFileList };
-    feedUploadMutation.mutate(postData);
+  const handleEdit = () => {
+    feedEditMutation.mutate();
   };
 
   return (
     <Container>
-      <Header title="스타일 업로드" />
+      <Header title="게시물 수정" />
       <ContentBox>
-        <LogoText>TRENDIK.</LogoText>
-        <Paragraph>
-          이미지 또는 영상을 업로드 하여 <br />
-          스타일 크리에이터가 되어보세요
-        </Paragraph>
         <UploadBox>
           <UploadWrapper>
             <ImageUploadIcon icon={faImages} />
@@ -135,13 +151,15 @@ const PostUpload = () => {
           {previewUrlList.map((url, index) => {
             return (
               <ImageWrapper key={url}>
-                <RemoveBtn
-                  onClick={() => {
-                    handleRemove(index);
-                  }}
-                >
-                  ✕
-                </RemoveBtn>
+                {imageFileList.length !== 0 && (
+                  <RemoveBtn
+                    onClick={() => {
+                      handleRemove(index);
+                    }}
+                  >
+                    ✕
+                  </RemoveBtn>
+                )}
                 <PreviewImage src={url} />
               </ImageWrapper>
             );
@@ -191,26 +209,23 @@ const PostUpload = () => {
             );
           })}
         </SelectList>
-        {feedUploadMutation.isPending ? (
+        {feedEditMutation.isPending ? (
           <LoadingWrapper>
             <SpinnerIcon icon={faSpinner} spinPulse />
           </LoadingWrapper>
         ) : (
           <UploadBtn
-            $isChecked={isChecked}
             onClick={() => {
-              if (isChecked) {
-                handleUpload();
-              }
+              handleEdit();
             }}
           >
-            스타일 올리기
+            수정하기
           </UploadBtn>
         )}
       </ContentBox>
     </Container>
   );
-};
+}
 
 const Container = styled.div`
   animation: ${componentMount} 0.15s linear;
@@ -219,20 +234,6 @@ const Container = styled.div`
 const ContentBox = styled.div`
   padding: 160px 30px;
   background-color: #fff;
-`;
-
-const LogoText = styled.div`
-  margin-bottom: 40px;
-  font-size: 32px;
-  font-weight: 800;
-  text-align: center;
-`;
-
-const Paragraph = styled.p`
-  margin-bottom: 70px;
-  font-size: 14px;
-  line-height: 1.3;
-  text-align: center;
 `;
 
 const UploadBox = styled.div`
@@ -397,15 +398,14 @@ const CheckIcon = styled(FontAwesomeIcon)`
   margin-right: 4px;
 `;
 
-const UploadBtn = styled.div<{ $isChecked: boolean }>`
+const UploadBtn = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
   height: 48px;
   border-radius: 8px;
-  background-color: ${({ $isChecked }) =>
-    $isChecked ? "rgba(1, 1, 1, 0.9)" : "rgba(1, 1, 1, 0.1)"};
+  background-color: rgba(1, 1, 1, 0.9);
   color: #fff;
   font-size: 14px;
 
@@ -429,4 +429,4 @@ const SpinnerIcon = styled(FontAwesomeIcon)`
   font-size: 28px;
 `;
 
-export default PostUpload;
+export default FeedEdit;

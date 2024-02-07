@@ -1,5 +1,5 @@
 import { ChangeEvent, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
@@ -10,15 +10,15 @@ import { DocumentData } from "firebase/firestore";
 import { ImageUpload, imageReset } from "../../../api/userApi";
 
 interface Props {
-  authUser: DocumentData | undefined;
-  setAuthUser: (user: DocumentData | undefined) => void;
+  authUser: DocumentData | null | undefined;
 }
 
-const EditImage: React.FC<Props> = ({ authUser, setAuthUser }) => {
+const EditImage: React.FC<Props> = ({ authUser }) => {
   const [profileImgFile, setProfileImgFile] = useState<File | null>(null);
   const [coverImgFile, setCoverImgFile] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>("");
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
+  const queryClient = useQueryClient();
 
   function profileImgChange(e: ChangeEvent<HTMLInputElement>) {
     const { files } = e.target;
@@ -41,27 +41,24 @@ const EditImage: React.FC<Props> = ({ authUser, setAuthUser }) => {
   }
 
   const imageUploadMutation = useMutation({
-    mutationFn: async (files: {
-      profileImgFile: File | null;
-      coverImgFile: File | null;
-    }) => {
-      const updatedUser = await ImageUpload(files);
-      setAuthUser(updatedUser);
+    mutationFn: async () => {
+      const ImageFile = {
+        profileImgFile,
+        coverImgFile,
+      };
+      const updatedUser = await ImageUpload(ImageFile);
+      return updatedUser;
+    },
+    onSuccess: (updatedUser) => {
+      setProfileImagePreview("");
+      setCoverImagePreview("");
+      queryClient.setQueryData(["authUser"], updatedUser);
+      alert("정상적으로 변경되었습니다.");
     },
   });
 
   function handleUpload() {
-    const updateFile = {
-      profileImgFile,
-      coverImgFile,
-    };
-    imageUploadMutation.mutate(updateFile, {
-      onSuccess: () => {
-        setProfileImagePreview("");
-        setCoverImagePreview("");
-        alert("정상적으로 변경되었습니다.");
-      },
-    });
+    imageUploadMutation.mutate();
   }
 
   const imageResetMutation = useMutation({
@@ -69,14 +66,17 @@ const EditImage: React.FC<Props> = ({ authUser, setAuthUser }) => {
       if (authUser) {
         const { profileImage, coverImage } = authUser;
         const updatedUser = await imageReset(profileImage, coverImage);
-        setAuthUser(updatedUser);
+        return updatedUser;
       }
+    },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["authUser"], updatedUser);
     },
   });
 
   function handleReset() {
-    const result = confirm("기본 프로필로 변경됩니다. 진행하시겠습니까?");
-    if (result) {
+    const check = confirm("기본 프로필로 변경됩니다. 진행하시겠습니까?");
+    if (check) {
       imageResetMutation.mutate();
     }
   }
@@ -167,7 +167,6 @@ const Container = styled.div<{ $selected: string | null }>`
 const BlackBackground = styled.div`
   position: absolute;
   inset: 0;
-  background-image: url("");
   background-color: rgba(1, 1, 1, 0.5);
 `;
 

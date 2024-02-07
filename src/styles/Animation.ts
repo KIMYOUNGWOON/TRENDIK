@@ -9,12 +9,11 @@ export const componentMount = keyframes`
   }
 `;
 
-export const editModalOpen = keyframes`
+export const scaleUp = keyframes`
   from {
-    height: 0;
-    
+    transform: scale(0);
   }
   to {
-    height: 400px;
+    transform: scale(1);
   }
 `;

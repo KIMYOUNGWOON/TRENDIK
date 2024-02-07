@@ -23,7 +23,9 @@ function FollowerFollowing() {
   const { data: user } = useQuery({
     queryKey: ["users", userId],
     queryFn: () => {
-      return getUser(userId);
+      if (userId) {
+        return getUser(userId);
+      }
     },
     enabled: !!userId,
   });

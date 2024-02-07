@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-import { logOut } from "../../api/userApi";
+import { getUser, logOut } from "../../api/userApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faUsers } from "@fortawesome/free-solid-svg-icons";
@@ -10,26 +10,37 @@ import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import Header from "../../components/Header";
 import UserContext from "../../contexts/UserContext";
 import { componentMount } from "../../styles/Animation";
+import { useQuery } from "@tanstack/react-query";
+import MenuSkeletonUi from "./components/MenuSkeletonUi";
 
 function Menu() {
-  const { authUser } = useContext(UserContext);
+  const { authUserId } = useContext(UserContext);
   const navigate = useNavigate();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["authUser"],
+    queryFn: () => getUser(authUserId),
+    enabled: !!authUserId,
+  });
 
   return (
     <Container>
       <Header title="더 보기" />
       <ContentBox>
         <ProfileBox>
-          <ProfileWrapper>
-            <ProfileImageWrapper>
-              <ProfileIcon icon={faCircleUser} />
-              {authUser?.profileImage && (
-                <ProfileImage src={authUser?.profileImage} />
-              )}
-            </ProfileImageWrapper>
-            <Nickname>{authUser?.nickName}</Nickname>
-          </ProfileWrapper>
-
+          {isLoading || authUserId === "" ? (
+            <MenuSkeletonUi />
+          ) : (
+            <ProfileWrapper>
+              <ProfileImageWrapper>
+                <ProfileIcon icon={faCircleUser} />
+                {data?.profileImage && (
+                  <ProfileImage $profileImage={data?.profileImage} />
+                )}
+              </ProfileImageWrapper>
+              <Nickname>{data?.nickName}</Nickname>
+            </ProfileWrapper>
+          )}
           <EditButton
             onClick={() => {
               navigate("/profile-edit");
@@ -39,27 +50,21 @@ function Menu() {
           </EditButton>
         </ProfileBox>
         <ListBox>
-          <ListItemWrapper>
+          <ListItemWrapper
+            onClick={() => {
+              navigate("/users");
+            }}
+          >
             <ListIcon icon={faUsers} $color={false} />
-            <ListText
-              $color={false}
-              onClick={() => {
-                navigate("/users");
-              }}
-            >
-              사용자 둘러보기
-            </ListText>
+            <ListText $color={false}>사용자 둘러보기</ListText>
           </ListItemWrapper>
-          <ListItemWrapper>
+          <ListItemWrapper
+            onClick={() => {
+              navigate("/account-info");
+            }}
+          >
             <ListIcon icon={faGear} $color={false} />
-            <ListText
-              $color={false}
-              onClick={() => {
-                navigate("/account-info");
-              }}
-            >
-              계정 정보
-            </ListText>
+            <ListText $color={false}>계정 정보</ListText>
           </ListItemWrapper>
           <ListItemWrapper
             onClick={() => {
@@ -104,13 +109,15 @@ const ProfileImageWrapper = styled.div`
   height: 60px;
 `;
 
-const ProfileImage = styled.img`
+const ProfileImage = styled.div<{ $profileImage: string }>`
   position: absolute;
-  left: 0;
+  top: 0;
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  object-fit: cover;
+  background-image: url(${({ $profileImage }) => $profileImage});
+  background-size: cover;
+  background-position: center;
 `;
 
 const ProfileIcon = styled(FontAwesomeIcon)`

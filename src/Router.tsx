@@ -1,16 +1,18 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/MainLayout";
+import AuthLayout from "./components/AuthLayout";
+import Join from "./pages/Join";
+import Login from "./pages/Login";
 import Main from "./pages/Main/Main";
 import Menu from "./pages/Menu/Menu";
 import ProfileEdit from "./pages/ProfileEdit/ProfileEdit";
 import AccountInfo from "./pages/AccountInfo/AccountInfo";
 import UserLookAround from "./pages/UserLookAround/UserLookAround";
 import UserHome from "./pages/UserHome/UserHome";
-import AuthLayout from "./components/AuthLayout";
-import Join from "./pages/Join";
-import Login from "./pages/Login";
 import FollowerFollowing from "./pages/FollowerFollowing/FollowerFollowing";
 import PostUpload from "./pages/PostUpload/PostUpload";
+import FeedDetail from "./pages/FeedDetail/FeedDetail";
+import FeedEdit from "./pages/FeedEdit/FeedEdit";
 
 const router = createBrowserRouter([
   {
@@ -25,6 +27,8 @@ const router = createBrowserRouter([
       { path: "/users/:userId", element: <UserHome /> },
       { path: "/users/:userId/:select", element: <FollowerFollowing /> },
       { path: "/posting", element: <PostUpload /> },
+      { path: "/feeds/:postId", element: <FeedDetail /> },
+      { path: "/feeds/:postId/edit", element: <FeedEdit /> },
     ],
   },
   {

@@ -16,20 +16,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { ImageUpload, UpdateData } from "./types";
+import { ImageUpload, UpdateData, User } from "./types";
 import {
   deleteObject,
   getDownloadURL,
   ref,
   uploadBytes,
 } from "firebase/storage";
-
-interface User {
-  email: string;
-  password: string;
-  name?: string;
-  nickName?: string;
-}
 
 export async function authSignUp({ email, password, name, nickName }: User) {
   try {
@@ -96,15 +89,19 @@ export async function logOut() {
   alert("로그아웃 되었습니다.");
 }
 
-export async function getUser(userId: string | undefined) {
+export async function getUser(userId: string) {
   try {
-    if (userId) {
-      const docRef = doc(db, "users", userId);
-      const docSnap = await getDoc(docRef);
-      return docSnap.data();
+    const docRef = doc(db, "users", userId);
+    const docSnap = await getDoc(docRef);
+    const data = docSnap.data();
+    if (data) {
+      return data;
+    } else {
+      return null;
     }
   } catch (e) {
     console.log(e);
+    return null;
   }
 }
 
@@ -160,29 +157,32 @@ export async function ImageUpload({
   coverImgFile,
 }: ImageUpload) {
   const user = auth.currentUser;
+  try {
+    if (user) {
+      if (profileImgFile) {
+        const profileImageRef = ref(storage, `users/${user.uid}/profile-image`);
+        await uploadBytes(profileImageRef, profileImgFile);
+        const profileImgURL = await getDownloadURL(profileImageRef);
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          profileImage: profileImgURL,
+        });
+      }
 
-  if (user) {
-    if (profileImgFile) {
-      const profileImageRef = ref(storage, `users/${user.uid}/profile-image`);
-      await uploadBytes(profileImageRef, profileImgFile);
-      const profileImgURL = await getDownloadURL(profileImageRef);
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        profileImage: profileImgURL,
-      });
+      if (coverImgFile) {
+        const coverImageRef = ref(storage, `users/${user.uid}/cover-image`);
+        await uploadBytes(coverImageRef, coverImgFile);
+        const coverImgURL = await getDownloadURL(coverImageRef);
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, {
+          coverImage: coverImgURL,
+        });
+      }
+      return getUser(user.uid);
     }
-
-    if (coverImgFile) {
-      const coverImageRef = ref(storage, `users/${user.uid}/cover-image`);
-      await uploadBytes(coverImageRef, coverImgFile);
-      const coverImgURL = await getDownloadURL(coverImageRef);
-      const userRef = doc(db, "users", user.uid);
-      await updateDoc(userRef, {
-        coverImage: coverImgURL,
-      });
-    }
-
-    return await getUser(user.uid);
+  } catch (error) {
+    console.log(error);
+    return null;
   }
 }
 
@@ -206,9 +206,10 @@ export async function imageReset(profileImage: string, coverImage: string) {
         coverImage: "",
       });
 
-      return await getUser(user.uid);
+      return getUser(user.uid);
     }
   } catch (error) {
     console.log(error);
+    return null;
   }
 }

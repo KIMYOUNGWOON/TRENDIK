@@ -1,8 +1,7 @@
 import styled from "styled-components";
-import { editModalOpen } from "../../../styles/Animation";
-import { DocumentData, doc, updateDoc } from "firebase/firestore";
-import { ChangeEvent, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { doc, updateDoc } from "firebase/firestore";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { auth, db } from "../../../firebase";
 import { getUser } from "../../../api/userApi";
 import LoadingSpinner from "../../../components/LoadingSpinner";
@@ -10,19 +9,19 @@ import { passwordRegex } from "../../../validation";
 import { updatePassword } from "firebase/auth";
 
 interface Props {
+  isOpened: boolean;
   selected: string;
   name: string;
   editModalClose: () => void;
-  setAuthUser: (value: React.SetStateAction<DocumentData | undefined>) => void;
 }
 
 const AccountEditModal: React.FC<Props> = ({
+  isOpened,
   selected,
   name,
   editModalClose,
-  setAuthUser,
 }) => {
-  const [nameValue, setNameValue] = useState(name);
+  const [nameValue, setNameValue] = useState("");
   const [passwordValue, setPasswordValue] = useState({
     password: "",
     passwordConfirm: "",
@@ -34,6 +33,11 @@ const AccountEditModal: React.FC<Props> = ({
     !passwordValue.passwordConfirm ||
     passwordValue.password === passwordValue.passwordConfirm;
   const isValidate = passwordCheck && passwordMatch;
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    setNameValue(name);
+  }, [name]);
 
   function handleNameChange(e: ChangeEvent<HTMLInputElement>) {
     const { value } = e.target;
@@ -52,21 +56,22 @@ const AccountEditModal: React.FC<Props> = ({
         if (user) {
           const userRef = doc(db, "users", user.uid);
           await updateDoc(userRef, { name });
-          setAuthUser(await getUser(user.uid));
+          const updatedUser = await getUser(user.uid);
+          return updatedUser;
         }
       } catch (e) {
         console.log(e);
       }
     },
+    onSuccess: (updatedUser) => {
+      queryClient.setQueryData(["authUser"], updatedUser);
+      alert("정상적으로 변경되었습니다.");
+      editModalClose();
+    },
   });
 
   async function editName() {
-    nameEditMutation.mutate(nameValue, {
-      onSuccess: () => {
-        alert("정상적으로 변경되었습니다.");
-        editModalClose();
-      },
-    });
+    nameEditMutation.mutate(nameValue);
   }
 
   const passwordEditMutation = useMutation({
@@ -92,7 +97,7 @@ const AccountEditModal: React.FC<Props> = ({
   }
 
   return (
-    <Container>
+    <Container $isOpened={isOpened}>
       <Header>
         <Title>{selected === "password" ? "비밀번호" : "이름"} 변경</Title>
         <CancelBtn onClick={editModalClose}>취소</CancelBtn>
@@ -171,24 +176,26 @@ const AccountEditModal: React.FC<Props> = ({
   );
 };
 
-const Container = styled.div`
+const Container = styled.div<{ $isOpened: boolean }>`
   position: fixed;
   left: 50%;
   right: 0;
   bottom: 70px;
   width: 500px;
-  height: 410px;
-  padding: 30px;
+  height: ${({ $isOpened }) => ($isOpened ? "410px" : 0)};
+  padding: 0 30px;
   background-color: #fff;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
   transform: translateX(-50%);
-  animation: ${editModalOpen} 0.2s linear;
+  transition: 0.3s;
+  overflow: hidden;
 `;
 
 const Header = styled.div`
   position: relative;
-  margin-bottom: 40px;
+  padding: 30px 0;
+  margin-bottom: 20px;
 `;
 
 const Title = styled.div`
@@ -198,8 +205,8 @@ const Title = styled.div`
 
 const CancelBtn = styled.div`
   position: absolute;
-  top: 0;
-  right: 10px;
+  top: 30px;
+  right: 0;
 
   &:hover {
     cursor: pointer;
