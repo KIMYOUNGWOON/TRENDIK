@@ -104,7 +104,7 @@ const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
         }}
       >
         {user.profileImage ? (
-          <ProfileImage src={user.profileImage} />
+          <ProfileImage $profileImage={user.profileImage} />
         ) : (
           <ProfileIcon icon={faCircleUser} />
         )}
@@ -142,10 +142,13 @@ const ProfileWrapper = styled.div`
   }
 `;
 
-const ProfileImage = styled.img`
+const ProfileImage = styled.div<{ $profileImage: string }>`
   width: 58px;
   height: 58px;
   border-radius: 50%;
+  background-image: url(${({ $profileImage }) => $profileImage});
+  background-size: cover;
+  background-position: center;
 `;
 
 const ProfileIcon = styled(FontAwesomeIcon)`

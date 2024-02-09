@@ -8,6 +8,7 @@ import { faArrowRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { DocumentData } from "firebase/firestore";
 import { ImageUpload, imageReset } from "../../../api/userApi";
+import { resizeImage, resizeProfileImage } from "../../../utils/resizeFile";
 
 interface Props {
   authUser: DocumentData | null | undefined;
@@ -20,21 +21,23 @@ const EditImage: React.FC<Props> = ({ authUser }) => {
   const [coverImagePreview, setCoverImagePreview] = useState<string>("");
   const queryClient = useQueryClient();
 
-  function profileImgChange(e: ChangeEvent<HTMLInputElement>) {
+  async function profileImgChange(e: ChangeEvent<HTMLInputElement>) {
     const { files } = e.target;
     if (files) {
-      setProfileImgFile(files[0]);
-      setProfileImagePreview(URL.createObjectURL(files[0]));
+      const resizedImage = await resizeProfileImage(files[0]);
+      setProfileImgFile(resizedImage);
+      setProfileImagePreview(URL.createObjectURL(resizedImage));
     }
 
     e.target.value = "";
   }
 
-  function coverImgChange(e: ChangeEvent<HTMLInputElement>) {
+  async function coverImgChange(e: ChangeEvent<HTMLInputElement>) {
     const { files } = e.target;
     if (files) {
-      setCoverImgFile(files[0]);
-      setCoverImagePreview(URL.createObjectURL(files[0]));
+      const resizedImage = await resizeImage(files[0]);
+      setCoverImgFile(resizedImage);
+      setCoverImagePreview(URL.createObjectURL(resizedImage));
     }
 
     e.target.value = "";

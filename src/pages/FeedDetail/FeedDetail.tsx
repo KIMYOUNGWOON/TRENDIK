@@ -7,7 +7,7 @@ import { getFeed } from "../../api/postApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
-import { faClone } from "@fortawesome/free-regular-svg-icons";
+import { faClone } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faSolidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
 import { faComment } from "@fortawesome/free-regular-svg-icons";
@@ -18,7 +18,7 @@ import Slider from "react-slick";
 import FeedDetailSkeletonUi from "./components/FeedDetailSkeletonUi";
 import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import FeedSetUpModal from "./components/FeedSetUpModal";
-import { getLikeStatus, likeFeed, unLikeFeed } from "../../api/likeAti";
+import { getLikeStatus, toggleLikeFeed } from "../../api/likeApi";
 import UserContext from "../../contexts/UserContext";
 import debounce from "lodash/debounce";
 import CommentModal from "./components/CommentModal";
@@ -29,9 +29,8 @@ function FeedDetail() {
   const [setUpModal, setSetUpModal] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
   const queryClient = useQueryClient();
-  console.log(setUpModal);
 
-  const { data, isLoading } = useQuery({
+  const { data: feedData, isLoading } = useQuery({
     queryKey: ["feed", postId],
     queryFn: () => getFeed(postId),
     enabled: !!postId,
@@ -42,10 +41,10 @@ function FeedDetail() {
     queryFn: () => getLikeStatus(postId),
   });
 
-  const likeMutation = useMutation({
-    mutationFn: () => likeFeed(postId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
+  const toggleLikeMutation = useMutation({
+    mutationFn: (status: string) => toggleLikeFeed(status, postId),
+    onMutate: () => {
+      queryClient.cancelQueries({
         queryKey: ["likeStatus", `${authUserId}-${postId}`],
       });
 
@@ -71,68 +70,39 @@ function FeedDetail() {
     },
   });
 
-  const unLikeMutation = useMutation({
-    mutationFn: () => unLikeFeed(postId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["likeStatus", `${authUserId}-${postId}`],
-      });
-
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "likeStatus",
-        `${authUserId}-${postId}`,
-      ]);
-
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        queryClient.setQueryData(
-          ["likeStatus", `${authUserId}-${postId}`],
-          context.previousStatus
-        );
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["likeStatus", `${authUserId}-${postId}`],
-      });
-    },
-  });
-
-  const debouncedLike = useRef(
-    debounce(() => {
-      likeMutation.mutate();
-    }, 400)
-  );
-
-  const debouncedUnlike = useRef(
-    debounce(() => {
-      unLikeMutation.mutate();
-    }, 400)
+  const debouncedToggleLike = useRef(
+    debounce((status) => {
+      toggleLikeMutation.mutate(status);
+    }, 1000)
   );
 
   useEffect(() => {
-    const debouncedLikeFn = debouncedLike.current;
-    const debouncedUnlikeFn = debouncedUnlike.current;
+    const debouncedToggleLikeFn = debouncedToggleLike.current;
 
     return () => {
-      debouncedLikeFn.cancel();
-      debouncedUnlikeFn.cancel();
+      debouncedToggleLikeFn.cancel();
     };
   }, []);
 
-  const handleLikeFeed = useCallback(() => {
-    queryClient.setQueryData(["likeStatus", `${authUserId}-${postId}`], true);
-    debouncedLike.current();
-  }, [authUserId, postId, queryClient]);
+  const previousStatus = useRef<boolean | undefined>();
 
-  const handleUnLikeFeed = useCallback(() => {
-    queryClient.setQueryData(["likeStatus", `${authUserId}-${postId}`], false);
-    debouncedUnlike.current();
-  }, [authUserId, postId, queryClient]);
+  const handleToggleLikeFeed = useCallback(() => {
+    const currentLikeStatus: boolean | undefined = queryClient.getQueryData([
+      "likeStatus",
+      `${authUserId}-${postId}`,
+    ]);
 
-  const userData = data?.userInfo;
+    queryClient.setQueryData(
+      ["likeStatus", `${authUserId}-${postId}`],
+      !currentLikeStatus
+    );
+
+    if (currentLikeStatus === previousStatus.current) return;
+
+    previousStatus.current = currentLikeStatus;
+
+    debouncedToggleLike.current(!currentLikeStatus ? "like" : "unLike");
+  }, [authUserId, postId, queryClient]);
 
   const settings = {
     dots: true,
@@ -147,20 +117,22 @@ function FeedDetail() {
   return (
     <Container>
       <Header title="게시물" />
-      {isLoading || !data ? (
+      {isLoading || !feedData ? (
         <FeedDetailSkeletonUi />
       ) : (
         <ContentBox>
           <FeedHeader>
             <ProfileWrapper>
               <ImageWrapper>
-                {data.userInfo.profileImage ? (
-                  <ProfileImage $profileImage={userData?.profileImage} />
+                {feedData.userInfo.profileImage ? (
+                  <ProfileImage
+                    $profileImage={feedData.userInfo.profileImage}
+                  />
                 ) : (
                   <ProfileIcon icon={faCircleUser} />
                 )}
               </ImageWrapper>
-              <NickName>{data.userInfo.nickName}</NickName>
+              <NickName>{feedData.userInfo.nickName}</NickName>
             </ProfileWrapper>
             <EllipsisBtn
               icon={faEllipsisVertical}
@@ -169,9 +141,9 @@ function FeedDetail() {
               }}
             />
           </FeedHeader>
-          {data.feedImages.length > 1 ? (
+          {feedData.feedImages.length > 1 ? (
             <Slider {...settings}>
-              {data.feedImages.map((img: string, index: number) => {
+              {feedData.feedImages.map((img: string, index: number) => {
                 return (
                   <FeedImage key={index} $imageUrl={img}>
                     <CopyIcon icon={faClone} />
@@ -180,21 +152,23 @@ function FeedDetail() {
               })}
             </Slider>
           ) : (
-            <FeedImage $imageUrl={data.feedImages[0]} />
+            <FeedImage $imageUrl={feedData.feedImages[0]} />
           )}
           <IconWrapper>
             <HeartCommentWrapper>
               {likeStatus ? (
-                <HeartIcon icon={faSolidHeart} onClick={handleUnLikeFeed} />
+                <HeartIcon icon={faSolidHeart} onClick={handleToggleLikeFeed} />
               ) : (
-                <HeartIcon icon={faHeart} onClick={handleLikeFeed} />
+                <HeartIcon icon={faHeart} onClick={handleToggleLikeFeed} />
               )}
+              <HeartCount>0</HeartCount>
               <CommentIcon
                 icon={faComment}
                 onClick={() => {
                   setCommentModal(true);
                 }}
               />
+              <CommentCount>{feedData.commentCount}</CommentCount>
             </HeartCommentWrapper>
             <BookmarkIcon icon={faBookmark} />
           </IconWrapper>
@@ -212,8 +186,8 @@ function FeedDetail() {
         setUpModal={setUpModal}
         setSetUpModal={setSetUpModal}
         postId={postId}
-        userId={data?.userId}
-        feedImageCount={data?.feedImages.length}
+        userId={feedData?.userId}
+        feedImageCount={feedData?.feedImages.length}
       />
       <CommentModal
         authUserId={authUserId}
@@ -308,12 +282,13 @@ const IconWrapper = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px;
+  padding: 20px;
 `;
 
 const HeartCommentWrapper = styled.div`
   display: flex;
-  gap: 24px;
+  align-items: center;
+  gap: 12px;
 `;
 
 const HeartIcon = styled(FontAwesomeIcon)`
@@ -324,7 +299,16 @@ const HeartIcon = styled(FontAwesomeIcon)`
   }
 `;
 
+const HeartCount = styled.div`
+  font-size: 18px;
+  margin-right: 18px;
+`;
+
 const CommentIcon = styled(HeartIcon)``;
+
+const CommentCount = styled.div`
+  font-size: 18px;
+`;
 
 const BookmarkIcon = styled(HeartIcon)``;
 

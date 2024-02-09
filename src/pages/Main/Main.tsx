@@ -15,8 +15,8 @@ import UserContext from "../../contexts/UserContext";
 function Main() {
   const { authUserId } = useContext(UserContext);
   const [initialLoading, setInitialLoading] = useState(true);
-  const navigate = useNavigate();
   const { ref, inView } = useInView();
+  const navigate = useNavigate();
 
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery({
@@ -28,8 +28,6 @@ function Main() {
       }) => lastPage.lastVisible ?? null,
       initialPageParam: null,
     });
-
-  console.log(data);
 
   useEffect(() => {
     if (!isFetching && initialLoading) {

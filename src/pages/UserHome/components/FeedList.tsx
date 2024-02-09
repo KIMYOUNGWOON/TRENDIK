@@ -2,7 +2,7 @@ import { DocumentData } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClone } from "@fortawesome/free-regular-svg-icons";
+import { faClone } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   feeds: DocumentData[] | undefined;

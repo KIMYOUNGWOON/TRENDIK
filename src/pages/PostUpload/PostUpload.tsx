@@ -12,6 +12,7 @@ import { componentMount } from "../../styles/Animation";
 import Header from "../../components/Header";
 import { PostData } from "../../api/types";
 import { uploadFeed } from "../../api/postApi";
+import { resizeImage } from "../../utils/resizeFile";
 
 const GENDER = [
   { id: 1, gender: "man", text: "남성" },
@@ -50,7 +51,7 @@ const PostUpload = () => {
     setPostValue({ ...postValue, [name]: value });
   }
 
-  function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
     const maxImageCount = 3;
     const { files } = e.target;
 
@@ -61,9 +62,10 @@ const PostUpload = () => {
       }
 
       const fileList = Array.from(files);
-      const urlList = fileList.map((file) => URL.createObjectURL(file));
+      const resizedFileList = await Promise.all(fileList.map(resizeImage));
+      const urlList = resizedFileList.map((file) => URL.createObjectURL(file));
       setPreviewUrlList(urlList);
-      setImageFileList(fileList);
+      setImageFileList(resizedFileList);
     }
 
     e.target.value = "";
