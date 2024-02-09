@@ -28,7 +28,7 @@ const FeedListItem: React.FC<Props> = ({ feed, authUserId }) => {
     queryFn: () => getLikeStatus(feed.id),
   });
 
-  const likeMutation = useMutation({
+  const toggleLikeMutation = useMutation({
     mutationFn: (status: string) => toggleLikeFeed(status, feed.id),
     onMutate: () => {
       queryClient.cancelQueries({
@@ -59,7 +59,7 @@ const FeedListItem: React.FC<Props> = ({ feed, authUserId }) => {
 
   const debouncedToggleLike = useRef(
     debounce((status) => {
-      likeMutation.mutate(status);
+      toggleLikeMutation.mutate(status);
     }, 1000)
   );
 
