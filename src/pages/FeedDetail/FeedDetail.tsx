@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { scaleUp } from "../../styles/Animation";
 import Header from "../../components/Header";
 import { useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFeed } from "../../api/postApi";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
@@ -16,12 +16,23 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import FeedDetailSkeletonUi from "./components/FeedDetailSkeletonUi";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import FeedSetUpModal from "./components/FeedSetUpModal";
 import { getLikeStatus, toggleLikeFeed } from "../../api/likeApi";
 import UserContext from "../../contexts/UserContext";
-import debounce from "lodash/debounce";
 import CommentModal from "./components/CommentModal";
+import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
+import { DocumentData } from "firebase/firestore";
+
+const settings = {
+  dots: true,
+  infinite: false,
+  speed: 500,
+  slidesToShow: 1,
+  slidesToScroll: 1,
+  swipeToSlide: true,
+  arrows: true,
+};
 
 function FeedDetail() {
   const { authUserId } = useContext(UserContext);
@@ -29,6 +40,8 @@ function FeedDetail() {
   const [setUpModal, setSetUpModal] = useState(false);
   const [commentModal, setCommentModal] = useState(false);
   const queryClient = useQueryClient();
+  const previousLikeStatus = useRef<boolean | undefined>();
+  const previousFeedStatus = useRef<DocumentData | undefined>();
 
   const { data: feedData, isLoading } = useQuery({
     queryKey: ["feed", postId],
@@ -38,80 +51,70 @@ function FeedDetail() {
 
   const { data: likeStatus } = useQuery({
     queryKey: ["likeStatus", `${authUserId}-${postId}`],
-    queryFn: () => getLikeStatus(postId),
+    queryFn: () => getLikeStatus("feed", postId),
   });
 
-  const toggleLikeMutation = useMutation({
-    mutationFn: (status: string) => toggleLikeFeed(status, postId),
-    onMutate: () => {
-      queryClient.cancelQueries({
-        queryKey: ["likeStatus", `${authUserId}-${postId}`],
-      });
+  const toggleLikeMutation = useDebouncedMutation(
+    (action: string) => toggleLikeFeed("feed", postId, action),
+    {
+      onMutate: () => {
+        queryClient.cancelQueries({
+          queryKey: ["likeStatus", `${authUserId}-${postId}`],
+        });
 
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "likeStatus",
-        `${authUserId}-${postId}`,
-      ]);
+        return {
+          previousLikeStatus: previousLikeStatus.current,
+          previousFeedStatus: previousFeedStatus.current,
+        };
+      },
+      onError: (
+        error: Error,
+        variables: string,
+        context: {
+          previousLikeStatus: boolean;
+          previousFeedStatus: DocumentData;
+        }
+      ) => {
+        if (context) {
+          queryClient.setQueryData(
+            ["likeStatus", `${authUserId}-${postId}`],
+            context.previousLikeStatus
+          );
 
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        queryClient.setQueryData(
-          ["likeStatus", `${authUserId}-${postId}`],
-          context.previousStatus
-        );
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["likeStatus", `${authUserId}-${postId}`],
-      });
-    },
-  });
-
-  const debouncedToggleLike = useRef(
-    debounce((status) => {
-      toggleLikeMutation.mutate(status);
-    }, 1000)
+          queryClient.setQueryData(
+            ["feed", postId],
+            context.previousFeedStatus
+          );
+        }
+      },
+    }
   );
 
-  useEffect(() => {
-    const debouncedToggleLikeFn = debouncedToggleLike.current;
-
-    return () => {
-      debouncedToggleLikeFn.cancel();
-    };
-  }, []);
-
-  const previousStatus = useRef<boolean | undefined>();
-
-  const handleToggleLikeFeed = useCallback(() => {
+  const handleToggleLikeFeed = () => {
     const currentLikeStatus: boolean | undefined = queryClient.getQueryData([
       "likeStatus",
       `${authUserId}-${postId}`,
     ]);
+
+    const currentFeedStatus: DocumentData | undefined =
+      queryClient.getQueryData(["feed", postId]);
+
+    previousLikeStatus.current = currentLikeStatus;
+    previousFeedStatus.current = currentFeedStatus;
 
     queryClient.setQueryData(
       ["likeStatus", `${authUserId}-${postId}`],
       !currentLikeStatus
     );
 
-    if (currentLikeStatus === previousStatus.current) return;
+    queryClient.setQueryData(["feed", postId], {
+      ...currentFeedStatus,
+      likeCount: !currentLikeStatus
+        ? currentFeedStatus?.likeCount + 1
+        : currentFeedStatus?.likeCount - 1,
+    });
 
-    previousStatus.current = currentLikeStatus;
-
-    debouncedToggleLike.current(!currentLikeStatus ? "like" : "unLike");
-  }, [authUserId, postId, queryClient]);
-
-  const settings = {
-    dots: true,
-    infinite: false,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    swipeToSlide: true,
-    arrows: true,
+    toggleLikeMutation.mutate(!currentLikeStatus ? "like" : "unLike");
   };
 
   return (
@@ -157,11 +160,14 @@ function FeedDetail() {
           <IconWrapper>
             <HeartCommentWrapper>
               {likeStatus ? (
-                <HeartIcon icon={faSolidHeart} onClick={handleToggleLikeFeed} />
+                <SolidHeartIcon
+                  icon={faSolidHeart}
+                  onClick={handleToggleLikeFeed}
+                />
               ) : (
                 <HeartIcon icon={faHeart} onClick={handleToggleLikeFeed} />
               )}
-              <HeartCount>0</HeartCount>
+              <HeartCount>{feedData.likeCount}</HeartCount>
               <CommentIcon
                 icon={faComment}
                 onClick={() => {
@@ -201,6 +207,7 @@ function FeedDetail() {
 
 const Container = styled.div`
   animation: ${scaleUp} 0.15s linear;
+  overflow: hidden;
 `;
 
 const ContentBox = styled.div`
@@ -299,6 +306,14 @@ const HeartIcon = styled(FontAwesomeIcon)`
   }
 `;
 
+const SolidHeartIcon = styled(FontAwesomeIcon)`
+  font-size: 28px;
+  color: #de1812;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
 const HeartCount = styled.div`
   font-size: 18px;
   margin-right: 18px;

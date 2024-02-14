@@ -5,6 +5,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   increment,
   limit,
@@ -16,6 +17,19 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { getUser } from "./userApi";
+
+export async function getComment(commentId: string | undefined) {
+  try {
+    if (commentId) {
+      const commentRef = doc(db, "comments", commentId);
+      const docSnap = await getDoc(commentRef);
+      const data = docSnap.data();
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 export async function getComments(
   feedId: string | undefined,
@@ -89,12 +103,26 @@ export async function postComment(comment: string, feedId: string | undefined) {
   }
 }
 
+export async function editComment(
+  commentId: string | undefined,
+  comment: string
+) {
+  try {
+    if (commentId) {
+      const docRef = doc(db, "comments", commentId);
+      await updateDoc(docRef, { comment });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 export async function deleteComment(
-  commentId: string,
+  commentId: string | undefined,
   feedId: string | undefined
 ) {
   try {
-    if (feedId) {
+    if (feedId && commentId) {
       await deleteDoc(doc(db, "comments", commentId));
       const feedRef = doc(db, "feeds", feedId);
       await updateDoc(feedRef, {

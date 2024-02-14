@@ -9,39 +9,34 @@ import {
 import { auth, db } from "../firebase";
 import { getUser } from "./userApi";
 
-export async function follow(followingId: string | undefined) {
+export async function toggleFollow(
+  action: string,
+  followingId: string | undefined
+) {
   const authUser = auth.currentUser;
   if (!authUser) return;
-
+  console.log(action);
   try {
     const followerId = authUser.uid;
-    const followsCollection = collection(db, "follows");
-    await addDoc(followsCollection, {
-      followerId,
-      followingId,
-      createdAt: new Date(),
-    });
-  } catch (e) {
-    console.log(e);
-  }
-}
-
-export async function unFollow(followingId: string | undefined) {
-  const authUser = auth.currentUser;
-  if (!authUser) return;
-
-  try {
-    const followerId = authUser.uid;
-    const followsCollection = collection(db, "follows");
-    const q = query(
-      followsCollection,
-      where("followerId", "==", followerId),
-      where("followingId", "==", followingId)
-    );
-    const querySnapshot = await getDocs(q);
-    querySnapshot.forEach((doc) => {
-      deleteDoc(doc.ref);
-    });
+    if (action === "follow") {
+      const followsCollection = collection(db, "follows");
+      await addDoc(followsCollection, {
+        followerId,
+        followingId,
+        createdAt: new Date(),
+      });
+    } else {
+      const followsCollection = collection(db, "follows");
+      const q = query(
+        followsCollection,
+        where("followerId", "==", followerId),
+        where("followingId", "==", followingId)
+      );
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        deleteDoc(doc.ref);
+      });
+    }
   } catch (e) {
     console.log(e);
   }

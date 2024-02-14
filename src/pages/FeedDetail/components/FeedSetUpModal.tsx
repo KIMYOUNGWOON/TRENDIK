@@ -27,7 +27,7 @@ const FeedSetUpModal: React.FC<Props> = ({
 
   const deleteFeedMutation = useMutation({
     mutationFn: () => deleteFeed(postId, feedImageCount),
-    onSuccess: () => navigate(`/users/${userId}`, { replace: true }),
+    onSuccess: () => navigate(`/users/${userId}`),
   });
 
   function handleDelete() {

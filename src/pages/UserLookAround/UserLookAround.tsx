@@ -3,27 +3,38 @@ import styled from "styled-components";
 import { componentMount } from "../../styles/Animation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUsers } from "../../api/userApi";
 import Header from "../../components/Header";
 import UserListItem from "./components/UserListItem";
 import UserContext from "../../contexts/UserContext";
+import { userSearch } from "../../api/searchApi";
+import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
 
 function UserLookAround() {
   const { authUserId } = useContext(UserContext);
   const [inputValue, setInputValue] = useState("");
-
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const { value } = e.target;
-    setInputValue(value);
-  }
+  const queryClient = useQueryClient();
 
   const { data, isLoading: usersLoading } = useQuery({
     queryKey: ["users", authUserId],
     queryFn: getUsers,
   });
 
-  const userList = Array.isArray(data) ? data : [];
+  const users = Array.isArray(data) ? data : [];
+
+  const mutationFn = async (value: string) => {
+    const filteredUsers = await userSearch(value);
+    queryClient.setQueryData(["users", authUserId], filteredUsers);
+  };
+
+  const userSearchMutation = useDebouncedMutation(mutationFn);
+
+  async function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value } = e.target;
+    userSearchMutation.mutate(value);
+    setInputValue(value);
+  }
 
   return (
     <Container>
@@ -33,13 +44,13 @@ function UserLookAround() {
           <SearchIcon icon={faMagnifyingGlass} />
           <SearchInput
             type="text"
-            placeholder="검색"
+            placeholder="닉네임 검색"
             value={inputValue}
             onChange={handleChange}
           />
         </SearchBarBox>
         <UserListBox>
-          {userList.map((user) => {
+          {users.map((user) => {
             return (
               <UserListItem
                 key={user.userId}
@@ -74,7 +85,7 @@ const SearchIcon = styled(FontAwesomeIcon)`
   top: 10px;
   left: 18px;
   font-size: 18px;
-  color: rgba(1, 1, 1, 0.4);
+  color: rgba(1, 1, 1, 0.3);
 `;
 
 const SearchInput = styled.input`
@@ -90,6 +101,7 @@ const SearchInput = styled.input`
 
   &::placeholder {
     color: rgba(1, 1, 1, 0.3);
+    font-size: 14px;
   }
 `;
 

@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-export async function getLikeStatus(postId: string | undefined) {
+export async function getLikeStatus(type: string, typeId: string | undefined) {
   const authUser = auth.currentUser;
   try {
     if (authUser) {
@@ -20,9 +20,10 @@ export async function getLikeStatus(postId: string | undefined) {
       const q = query(
         likeCollection,
         where("userId", "==", userId),
-        where("feedId", "==", postId)
+        where(`${type}Id`, "==", typeId)
       );
       const querySnapshot = await getDocs(q);
+
       return !querySnapshot.empty;
     }
   } catch (error) {
@@ -32,65 +33,43 @@ export async function getLikeStatus(postId: string | undefined) {
 }
 
 export async function toggleLikeFeed(
-  status: string,
-  postId: string | undefined
+  type: string,
+  typeId: string | undefined,
+  action: string
 ) {
   const authUser = auth.currentUser;
-  console.log(status);
+  console.log(action);
   try {
-    if (authUser && postId) {
+    if (authUser && typeId) {
       const userId = authUser.uid;
       const likesCollection = collection(db, "likes");
       const q = query(
         likesCollection,
         where("userId", "==", userId),
-        where("feedId", "==", postId)
+        where(`${type}Id`, "==", typeId)
       );
       const querySnapshot = await getDocs(q);
-      if (status === "like") {
+      if (action === "like") {
         if (querySnapshot.empty) {
           const likeSchema = {
-            type: "feed",
+            type,
             userId,
-            feedId: postId,
+            [`${type}Id`]: typeId,
             createdAt: new Date(),
           };
           await addDoc(likesCollection, likeSchema);
-          const docRef = doc(db, "feeds", postId);
+          const docRef = doc(db, `${type}s`, typeId);
           await updateDoc(docRef, { likeCount: increment(1) });
         }
       } else {
         if (!querySnapshot.empty) {
           await deleteDoc(querySnapshot.docs[0].ref);
-          const docRef = doc(db, "feeds", postId);
+          const docRef = doc(db, `${type}s`, typeId);
           await updateDoc(docRef, { likeCount: increment(-1) });
         }
       }
     }
   } catch (error) {
     console.log(error);
-    return null;
-  }
-}
-
-export async function unLikeFeed(postId: string | undefined) {
-  const authUser = auth.currentUser;
-  try {
-    if (authUser && postId) {
-      const userId = authUser.uid;
-      const likeCollection = collection(db, "likes");
-      const q = query(
-        likeCollection,
-        where("userId", "==", userId),
-        where("feedId", "==", postId)
-      );
-      const querySnapshot = await getDocs(q);
-      await deleteDoc(querySnapshot.docs[0].ref);
-      const docRef = doc(db, "feeds", postId);
-      await updateDoc(docRef, { likeCount: increment(-1) });
-    }
-  } catch (error) {
-    console.log(error);
-    return null;
   }
 }

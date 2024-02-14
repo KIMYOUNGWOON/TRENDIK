@@ -32,12 +32,10 @@ export async function uploadFeed(postData: PostData) {
       const userId = authUser.uid;
 
       const feedData = {
+        ...postData,
         id: "",
         userId: userId,
-        content: postData.content,
         feedImages: [],
-        gender: postData.gender,
-        style: postData.style,
         commentCount: 0,
         likeCount: 0,
         createdAt: new Date(),
@@ -50,7 +48,7 @@ export async function uploadFeed(postData: PostData) {
         id: docRef.id,
       });
 
-      const imageUploadPromises = postData.imageFiles.map(
+      const imageUploadPromises = postData.feedImages.map(
         async (file, index) => {
           const feedImageRef = ref(
             storage,

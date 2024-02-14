@@ -3,12 +3,10 @@ export interface User {
   password: string;
   name?: string;
   nickName?: string;
-}
-
-export interface UpdateData {
-  userId: string | undefined;
-  key: string;
-  value: string | undefined;
+  gender?: string;
+  height?: number;
+  weight?: number;
+  shoesSize?: number;
 }
 
 export interface ImageUpload {
@@ -20,7 +18,11 @@ export interface PostData {
   content: string;
   gender: string;
   style: string;
-  imageFiles: File[];
+  feedImages: File[];
+  outer: string;
+  top: string;
+  bottom: string;
+  shoes: string;
 }
 
 export interface FeedUpdateData {

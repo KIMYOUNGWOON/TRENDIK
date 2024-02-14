@@ -5,7 +5,7 @@ import UserContext from "../../contexts/UserContext";
 import Header from "../../components/Header";
 import AccountEditModal from "./components/AccountEditModal";
 import { useQuery } from "@tanstack/react-query";
-import { getUser } from "../../api/userApi";
+import { deleteAccount, getUser } from "../../api/userApi";
 
 function AccountInfo() {
   const { authUserId } = useContext(UserContext);
@@ -13,7 +13,7 @@ function AccountInfo() {
   const [selected, setSelected] = useState("");
 
   const { data: authUser } = useQuery({
-    queryKey: ["authUser"],
+    queryKey: ["authUser", authUserId],
     queryFn: () => getUser(authUserId),
     enabled: !!authUserId,
   });
@@ -27,6 +27,10 @@ function AccountInfo() {
     setIsOpened((prev) => !prev);
   }
 
+  if (!authUser) {
+    return;
+  }
+
   return (
     <Container>
       <Header title="계정 정보" />
@@ -34,7 +38,7 @@ function AccountInfo() {
         <JoinDate>가입일자 : 2024/01/24 18:26:06</JoinDate>
         <InputWrapper>
           <Label>이름</Label>
-          <Input disabled value={authUser?.name || ""} />
+          <Input disabled value={authUser.name || ""} />
           <NamedEdit
             onClick={() => {
               editModalOpen("name");
@@ -45,7 +49,7 @@ function AccountInfo() {
         </InputWrapper>
         <InputWrapper>
           <Label>이메일</Label>
-          <Input disabled value={authUser?.email || ""} />
+          <Input disabled value={authUser.email || ""} />
         </InputWrapper>
         <InputWrapper>
           <Label>비밀번호</Label>
@@ -58,14 +62,24 @@ function AccountInfo() {
             변경
           </PasswordEdit>
         </InputWrapper>
-
-        <DeleteAccount>회원탈퇴</DeleteAccount>
+        <DeleteAccount
+          onClick={async () => {
+            const check = confirm(
+              "회원 탈퇴 시 모든 정보는 삭제됩니다. 진행하시겠습니까?"
+            );
+            if (check) {
+              await deleteAccount();
+            }
+          }}
+        >
+          회원탈퇴
+        </DeleteAccount>
         {isOpened && <ModalBackground onClick={editModalClose} />}
         <AccountEditModal
           isOpened={isOpened}
           selected={selected}
           editModalClose={editModalClose}
-          name={authUser?.name}
+          authUser={authUser}
         />
       </ContentBox>
     </Container>
@@ -138,6 +152,8 @@ const PasswordEdit = styled(EditButton)``;
 const NamedEdit = styled(EditButton)``;
 
 const DeleteAccount = styled.div`
+  display: inline;
+  font-size: 14px;
   color: #f50100;
 
   &:hover {

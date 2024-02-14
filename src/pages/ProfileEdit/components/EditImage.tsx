@@ -53,10 +53,10 @@ const EditImage: React.FC<Props> = ({ authUser }) => {
       return updatedUser;
     },
     onSuccess: (updatedUser) => {
+      alert("정상적으로 변경되었습니다.");
       setProfileImagePreview("");
       setCoverImagePreview("");
-      queryClient.setQueryData(["authUser"], updatedUser);
-      alert("정상적으로 변경되었습니다.");
+      queryClient.setQueryData(["authUser", authUser?.userId], updatedUser);
     },
   });
 
@@ -73,7 +73,7 @@ const EditImage: React.FC<Props> = ({ authUser }) => {
       }
     },
     onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["authUser"], updatedUser);
+      queryClient.setQueryData(["authUser", authUser?.userId], updatedUser);
     },
   });
 

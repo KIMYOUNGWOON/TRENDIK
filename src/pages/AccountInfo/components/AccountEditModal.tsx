@@ -1,9 +1,9 @@
 import styled from "styled-components";
-import { doc, updateDoc } from "firebase/firestore";
+import { DocumentData } from "firebase/firestore";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { auth, db } from "../../../firebase";
-import { getUser } from "../../../api/userApi";
+import { auth } from "../../../firebase";
+import { updateProfile } from "../../../api/userApi";
 import LoadingSpinner from "../../../components/LoadingSpinner";
 import { passwordRegex } from "../../../validation";
 import { updatePassword } from "firebase/auth";
@@ -11,14 +11,14 @@ import { updatePassword } from "firebase/auth";
 interface Props {
   isOpened: boolean;
   selected: string;
-  name: string;
+  authUser: DocumentData;
   editModalClose: () => void;
 }
 
 const AccountEditModal: React.FC<Props> = ({
   isOpened,
   selected,
-  name,
+  authUser,
   editModalClose,
 }) => {
   const [nameValue, setNameValue] = useState("");
@@ -26,7 +26,7 @@ const AccountEditModal: React.FC<Props> = ({
     password: "",
     passwordConfirm: "",
   });
-  const nameDiff = name !== nameValue;
+  const nameDiff = authUser.name !== nameValue;
   const passwordCheck =
     !passwordValue.password || passwordRegex.test(passwordValue.password);
   const passwordMatch =
@@ -36,8 +36,8 @@ const AccountEditModal: React.FC<Props> = ({
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    setNameValue(name);
-  }, [name]);
+    setNameValue(authUser.name);
+  }, [authUser.name]);
 
   function handleNameChange(e: ChangeEvent<HTMLInputElement>) {
     const { value } = e.target;
@@ -49,29 +49,46 @@ const AccountEditModal: React.FC<Props> = ({
     setPasswordValue({ ...passwordValue, [name]: value });
   }
 
-  const nameEditMutation = useMutation({
-    mutationFn: async (name: string) => {
-      try {
-        const user = auth.currentUser;
-        if (user) {
-          const userRef = doc(db, "users", user.uid);
-          await updateDoc(userRef, { name });
-          const updatedUser = await getUser(user.uid);
-          return updatedUser;
-        }
-      } catch (e) {
-        console.log(e);
+  const editNameMutation = useMutation({
+    mutationFn: (data: { [x: string]: string }) => updateProfile(data),
+    onMutate: () => {
+      queryClient.cancelQueries({ queryKey: ["authUser", authUser.userId] });
+
+      const previousValue = queryClient.getQueryData([
+        "authUser",
+        authUser.userId,
+      ]);
+
+      if (previousValue) {
+        queryClient.setQueryData(["authUser", authUser.userId], {
+          ...previousValue,
+          name: nameValue,
+        });
+      }
+
+      editModalClose();
+
+      return { previousValue };
+    },
+    onError: (error, variables, context) => {
+      if (context) {
+        queryClient.setQueryData(
+          ["authUser", authUser.userId],
+          context.previousValue
+        );
       }
     },
-    onSuccess: (updatedUser) => {
-      queryClient.setQueryData(["authUser"], updatedUser);
+    onSettled: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["authUser", authUser.userId],
+      });
       alert("정상적으로 변경되었습니다.");
-      editModalClose();
     },
   });
 
-  async function editName() {
-    nameEditMutation.mutate(nameValue);
+  function handleEditName() {
+    const updateData = { name: nameValue };
+    editNameMutation.mutate(updateData);
   }
 
   const passwordEditMutation = useMutation({
@@ -85,15 +102,14 @@ const AccountEditModal: React.FC<Props> = ({
         console.log(e);
       }
     },
+    onSuccess: () => {
+      alert("정상적으로 변경되었습니다.");
+      editModalClose();
+    },
   });
 
   async function editPassword() {
-    passwordEditMutation.mutate(passwordValue.password, {
-      onSuccess: () => {
-        alert("정상적으로 변경되었습니다.");
-        editModalClose();
-      },
-    });
+    passwordEditMutation.mutate(passwordValue.password);
   }
 
   return (
@@ -158,14 +174,14 @@ const AccountEditModal: React.FC<Props> = ({
             저장하기
           </SavePassword>
         )
-      ) : nameEditMutation.isPending ? (
-        <LoadingSpinner />
       ) : (
         <SaveName
           $diff={nameDiff}
           onClick={() => {
             if (nameDiff) {
-              editName();
+              handleEditName();
+            } else {
+              alert("수정된 내용이 없습니다.");
             }
           }}
         >
@@ -182,14 +198,14 @@ const Container = styled.div<{ $isOpened: boolean }>`
   right: 0;
   bottom: 70px;
   width: 500px;
-  height: ${({ $isOpened }) => ($isOpened ? "410px" : 0)};
+  height: 410px;
   padding: 0 30px;
   background-color: #fff;
   border-top-left-radius: 10px;
   border-top-right-radius: 10px;
-  transform: translateX(-50%);
+  transform: translate(-50%, ${({ $isOpened }) => ($isOpened ? "0" : "100%")});
+  opacity: ${({ $isOpened }) => ($isOpened ? 1 : 0)};
   transition: 0.3s;
-  overflow: hidden;
 `;
 
 const Header = styled.div`

@@ -1,37 +1,20 @@
 import styled from "styled-components";
 
 function MainSkeletonUi() {
-  const feedList = Array(6).fill(0);
   return (
     <Container>
-      <FeedList>
-        {feedList.map((_, index) => {
-          return (
-            <FeedListItem key={index}>
-              <FeedHeader>
-                <ProfileImage />
-                <NickName />
-              </FeedHeader>
-              <FeedImage />
-            </FeedListItem>
-          );
-        })}
-      </FeedList>
+      <FeedHeader>
+        <ProfileImage />
+        <NickName />
+      </FeedHeader>
+      <FeedImage />
     </Container>
   );
 }
 
 const Container = styled.div`
-  padding: 100px 10px;
+  width: 235px;
 `;
-
-const FeedList = styled.ul`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-`;
-
-const FeedListItem = styled.li``;
 
 const FeedHeader = styled.div`
   display: flex;

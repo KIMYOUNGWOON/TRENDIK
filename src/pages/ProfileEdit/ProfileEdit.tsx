@@ -14,7 +14,7 @@ function ProfileEdit() {
   const [selected, setSelected] = useState("");
 
   const { data: authUser } = useQuery({
-    queryKey: ["authUser"],
+    queryKey: ["authUser", authUserId],
     queryFn: () => getUser(authUserId),
     enabled: !!authUserId,
   });
@@ -28,6 +28,10 @@ function ProfileEdit() {
     setIsOpened((prev) => !prev);
   }
 
+  if (!authUser) {
+    return;
+  }
+
   return (
     <Container>
       <Header title="프로필 설정" />
@@ -36,18 +40,64 @@ function ProfileEdit() {
         <ProfileInfoEditBox>
           <InputWrapper>
             <Label>닉네임</Label>
-            <Input value={authUser?.nickName || ""} disabled />
-            <NickNameEditBtn
+            <Input value={authUser.nickName || ""} disabled />
+            <EditBtn
               onClick={() => {
                 editModalOpen("nickName");
               }}
             >
               변경
-            </NickNameEditBtn>
+            </EditBtn>
           </InputWrapper>
           <InputWrapper>
+            <Label>성별</Label>
+            <Input value={authUser.gender || ""} disabled />
+            <EditBtn
+              onClick={() => {
+                editModalOpen("gender");
+              }}
+            >
+              변경
+            </EditBtn>
+          </InputWrapper>
+          <Wrapper>
+            <InputWrapper>
+              <Label>키</Label>
+              <Input value={authUser.height || 0} disabled />
+              <EditBtn
+                onClick={() => {
+                  editModalOpen("height");
+                }}
+              >
+                변경
+              </EditBtn>
+            </InputWrapper>
+            <InputWrapper>
+              <Label>몸무게</Label>
+              <Input value={authUser.weight || 0} disabled />
+              <EditBtn
+                onClick={() => {
+                  editModalOpen("weight");
+                }}
+              >
+                변경
+              </EditBtn>
+            </InputWrapper>
+            <InputWrapper>
+              <Label>신발 사이즈</Label>
+              <Input value={authUser.shoesSize || 0} disabled />
+              <EditBtn
+                onClick={() => {
+                  editModalOpen("shoesSize");
+                }}
+              >
+                변경
+              </EditBtn>
+            </InputWrapper>
+          </Wrapper>
+          <InputWrapper>
             <Label>소개</Label>
-            <TextArea value={authUser?.bio || ""} disabled></TextArea>
+            <TextArea value={authUser.bio || ""} disabled></TextArea>
             <BioEditBtn
               onClick={() => {
                 editModalOpen("bio");
@@ -62,8 +112,7 @@ function ProfileEdit() {
           isOpened={isOpened}
           selected={selected}
           editModalClose={editModalClose}
-          nickName={authUser?.nickName}
-          bio={authUser?.bio}
+          authUser={authUser}
         />
       </ContentBox>
     </Container>
@@ -72,17 +121,23 @@ function ProfileEdit() {
 
 const Container = styled.div`
   animation: ${componentMount} 0.15s linear;
+  overflow: hidden;
 `;
 
 const ContentBox = styled.div`
   position: relative;
   padding: 100px 0;
   background-color: #fff;
-  overflow: hidden;
 `;
 
 const ProfileInfoEditBox = styled.div`
   padding: 0 40px;
+`;
+
+const Wrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
 `;
 
 const InputWrapper = styled.div`
@@ -125,15 +180,15 @@ const TextArea = styled.textarea`
   outline: none;
 `;
 
-const NickNameEditBtn = styled.div`
+const EditBtn = styled.div`
   position: absolute;
-  top: 36px;
+  top: 37px;
   right: 10px;
-  padding: 6px 12px;
+  padding: 6px 10px;
   border-radius: 6px;
   background-color: rgba(1, 1, 1, 0.2);
   color: #fff;
-  font-size: 12px;
+  font-size: 10px;
   transition: 0.3s;
 
   &:hover {
@@ -142,7 +197,7 @@ const NickNameEditBtn = styled.div`
   }
 `;
 
-const BioEditBtn = styled(NickNameEditBtn)`
+const BioEditBtn = styled(EditBtn)`
   top: 138px;
   right: 16px;
 `;

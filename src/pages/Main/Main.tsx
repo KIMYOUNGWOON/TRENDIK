@@ -8,7 +8,6 @@ import { getAllFeeds } from "../../api/postApi";
 import FeedListItem from "./components/FeedListItem";
 import { useContext, useEffect, useState } from "react";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
-import MainSkeletonUi from "./components/MainSkeletonUi";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import UserContext from "../../contexts/UserContext";
 
@@ -21,7 +20,7 @@ function Main() {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["allFeeds", authUserId],
-      queryFn: ({ pageParam }) => getAllFeeds(6, pageParam),
+      queryFn: ({ pageParam }) => getAllFeeds(8, pageParam),
       getNextPageParam: (lastPage: {
         feedList: DocumentData[];
         lastVisible: DocumentSnapshot | null;
@@ -51,34 +50,33 @@ function Main() {
           }}
         />
       </Header>
-      {initialLoading ? (
-        <MainSkeletonUi />
-      ) : (
-        <ContentBox>
-          <FeedListBox>
-            {data?.pages.map((group, i) => {
-              return (
-                group.feedList.length !== 0 && (
-                  <PageGroup key={i}>
-                    {group.feedList.map((feed) => {
-                      return (
-                        <FeedListItem
-                          key={feed.id}
-                          authUserId={authUserId}
-                          feed={feed}
-                        />
-                      );
-                    })}
-                  </PageGroup>
-                )
-              );
-            })}
-          </FeedListBox>
+      <ContentBox>
+        <FeedListBox>
+          {data?.pages.map((group, i) => {
+            return (
+              group.feedList.length !== 0 && (
+                <PageGroup key={i}>
+                  {group.feedList.map((feed) => {
+                    return (
+                      <FeedListItem
+                        key={feed.id}
+                        authUserId={authUserId}
+                        feed={feed}
+                        initialLoading={initialLoading}
+                      />
+                    );
+                  })}
+                </PageGroup>
+              )
+            );
+          })}
+        </FeedListBox>
+        {data?.pages[0].feedList.length === 8 && (
           <Observer ref={ref}>
             {isFetchingNextPage && <LoadingSpinner />}
           </Observer>
-        </ContentBox>
-      )}
+        )}
+      </ContentBox>
     </Container>
   );
 }
@@ -117,16 +115,6 @@ const MenuButton = styled(FontAwesomeIcon)`
 const ContentBox = styled.main`
   padding: 100px 10px;
 `;
-
-// const FilterWrapper = styled.div`
-//   width: 100px;
-//   height: 50px;
-//   margin-bottom: 30px;
-// `;
-
-// const OrderLatest = styled.div``;
-
-// const OrderPopular = styled.div``;
 
 const FeedListBox = styled.div``;
 

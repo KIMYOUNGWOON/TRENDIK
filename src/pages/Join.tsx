@@ -21,6 +21,7 @@ import {
   containsSpecialCharacterRegex,
   nickNameRegex,
 } from "../validation";
+import { User } from "../api/types";
 
 const INPUT_VALUE = {
   email: "",
@@ -28,6 +29,10 @@ const INPUT_VALUE = {
   passwordConfirm: "",
   name: "",
   nickName: "",
+  gender: "",
+  height: 0,
+  weight: 0,
+  shoesSize: 0,
   serviceAgree: false,
   personalInfoAgree: false,
 };
@@ -45,6 +50,16 @@ function Join() {
   const [checkValue, setCheckValue] = useState(DUPLICATE_CHECK);
   const [viewPassword, setViewPassword] = useState([false, false]);
   const navigate = useNavigate();
+
+  const allEntered = Object.values(inputValue).every((value) => {
+    if (typeof value === "boolean") {
+      return value === true;
+    } else if (typeof value === "string") {
+      return value.length > 0;
+    } else {
+      return value !== 0;
+    }
+  });
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
@@ -68,12 +83,14 @@ function Join() {
   }
 
   const signUpMutation = useMutation({
-    mutationFn: (newUser: {
-      email: string;
-      password: string;
-      name: string;
-      nickName: string;
-    }) => authSignUp(newUser),
+    mutationFn: (newUser: User) => authSignUp(newUser),
+    onError: (e) => {
+      console.log(e);
+      alert("이미 사용 중인 이메일입니다.");
+    },
+    onSuccess: () => {
+      navigate("/");
+    },
   });
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
@@ -84,17 +101,12 @@ function Join() {
       password: inputValue.password,
       name: inputValue.name,
       nickName: inputValue.nickName,
+      gender: inputValue.gender,
+      height: inputValue.height,
+      weight: inputValue.weight,
     };
 
-    signUpMutation.mutate(newUser, {
-      onSuccess: () => {
-        navigate("/");
-      },
-      onError: (e) => {
-        console.log(e);
-        alert("이미 사용 중인 이메일입니다.");
-      },
-    });
+    signUpMutation.mutate(newUser);
   }
 
   const emailCheck =
@@ -140,10 +152,7 @@ function Join() {
     passwordCheck &&
     passwordConfirmCheck &&
     nickNameCheck &&
-    inputValue.name.length !== 0 &&
-    inputValue.nickName.length !== 0 &&
-    inputValue.serviceAgree &&
-    inputValue.personalInfoAgree;
+    allEntered;
 
   return (
     <Container>
@@ -151,7 +160,15 @@ function Join() {
         <TextLogo>TRENDIK.</TextLogo>
         <JoinText>회원가입</JoinText>
         <ConfirmText>
-          이미 계정이 있으신가요? <GoToLogin to="/login">로그인</GoToLogin>
+          이미 계정이 있으신가요?{" "}
+          <GoToLogin
+            to="/login"
+            onClick={() => {
+              window.scrollTo(0, 0);
+            }}
+          >
+            로그인
+          </GoToLogin>
         </ConfirmText>
         <Form onSubmit={handleSubmit}>
           <InputWrapper>
@@ -327,6 +344,70 @@ function Join() {
               </DuplicateCheck>
             )}
           </InputWrapper>
+          <GenderSelectTitle>
+            <RequiredMark>•</RequiredMark> 성별
+          </GenderSelectTitle>
+          <GenderSelectContainer>
+            <GenderSelectWrapper>
+              <RadioInput
+                name="gender"
+                type="radio"
+                value="남성"
+                onChange={handleChange}
+              />
+              <RadioLabel>남성</RadioLabel>
+            </GenderSelectWrapper>
+            <GenderSelectWrapper>
+              <RadioInput
+                name="gender"
+                type="radio"
+                value="여성"
+                onChange={handleChange}
+              />
+              <RadioLabel>여성</RadioLabel>
+            </GenderSelectWrapper>
+          </GenderSelectContainer>
+          <BodyInfoInputContainer>
+            <BodyInfoInputWrapper>
+              <BodyInfoInputLabel>
+                <RequiredMark>•</RequiredMark> 키
+              </BodyInfoInputLabel>
+              <BodyInfoInput
+                type="number"
+                name="height"
+                maxLength={3}
+                onChange={handleChange}
+                value={inputValue.height}
+              />
+              <BodyInfoUnit>cm</BodyInfoUnit>
+            </BodyInfoInputWrapper>
+            <BodyInfoInputWrapper>
+              <BodyInfoInputLabel>
+                <RequiredMark>•</RequiredMark> 몸무게
+              </BodyInfoInputLabel>
+              <BodyInfoInput
+                type="number"
+                name="weight"
+                maxLength={3}
+                onChange={handleChange}
+                value={inputValue.weight}
+              />
+              <BodyInfoUnit>kg</BodyInfoUnit>
+            </BodyInfoInputWrapper>
+            <BodyInfoInputWrapper>
+              <BodyInfoInputLabel>
+                <RequiredMark>•</RequiredMark> 신발 사이즈
+              </BodyInfoInputLabel>
+              <BodyInfoInput
+                type="number"
+                name="shoesSize"
+                maxLength={3}
+                onChange={handleChange}
+                value={inputValue.shoesSize}
+              />
+              <BodyInfoUnit>mm</BodyInfoUnit>
+            </BodyInfoInputWrapper>
+          </BodyInfoInputContainer>
           <AgreeTitle>약관 동의</AgreeTitle>
           <AgreeBox>
             <AgreeWrapper>
@@ -597,6 +678,75 @@ const JoinButton = styled.button<{ $disabled: boolean | undefined }>`
   &:hover {
     cursor: pointer;
   }
+`;
+const GenderSelectTitle = styled.div`
+  display: block;
+  margin-bottom: 10px;
+  color: rgba(1, 1, 1, 0.7);
+  font-size: 14px;
+`;
+
+const GenderSelectContainer = styled.div`
+  display: flex;
+  gap: 12px;
+  margin-bottom: 40px;
+`;
+
+const GenderSelectWrapper = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 2px;
+`;
+
+const RadioLabel = styled.label`
+  color: rgba(1, 1, 1, 0.7);
+  font-size: 14px;
+`;
+
+const RadioInput = styled.input``;
+
+const BodyInfoInputContainer = styled.div`
+  display: flex;
+  gap: 30px;
+  margin-bottom: 40px;
+`;
+
+const BodyInfoInputWrapper = styled.div`
+  align-items: center;
+  gap: 8px;
+`;
+
+const BodyInfoInputLabel = styled.label`
+  display: block;
+  color: rgba(1, 1, 1, 0.7);
+  font-size: 14px;
+  margin-bottom: 10px;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const BodyInfoInput = styled.input`
+  display: inline-block;
+  width: 70px;
+  height: 34px;
+  margin-right: 8px;
+  padding-left: 28px;
+  border: none;
+  border-radius: 8px;
+  background-color: #f6f7f8;
+  outline: none;
+  color: #494949;
+
+  &::placeholder {
+    color: #afb0b3;
+    font-size: 12px;
+  }
+`;
+
+const BodyInfoUnit = styled.span`
+  font-size: 14px;
 `;
 
 const LoadingWrapper = styled.div`

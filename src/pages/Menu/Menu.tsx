@@ -18,7 +18,7 @@ function Menu() {
   const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["authUser"],
+    queryKey: ["authUser", authUserId],
     queryFn: () => getUser(authUserId),
     enabled: !!authUserId,
   });
@@ -50,29 +50,38 @@ function Menu() {
           </EditButton>
         </ProfileBox>
         <ListBox>
-          <ListItemWrapper
-            onClick={() => {
-              navigate("/users");
-            }}
-          >
+          <ListItemWrapper>
             <ListIcon icon={faUsers} $color={false} />
-            <ListText $color={false}>사용자 둘러보기</ListText>
+            <ListText
+              $color={false}
+              onClick={() => {
+                navigate("/users");
+              }}
+            >
+              사용자 둘러보기
+            </ListText>
           </ListItemWrapper>
-          <ListItemWrapper
-            onClick={() => {
-              navigate("/account-info");
-            }}
-          >
+          <ListItemWrapper>
             <ListIcon icon={faGear} $color={false} />
-            <ListText $color={false}>계정 정보</ListText>
+            <ListText
+              $color={false}
+              onClick={() => {
+                navigate("/account-info");
+              }}
+            >
+              계정 정보
+            </ListText>
           </ListItemWrapper>
-          <ListItemWrapper
-            onClick={() => {
-              logOut();
-            }}
-          >
+          <ListItemWrapper>
             <ListIcon icon={faArrowRightFromBracket} $color={true} />
-            <ListText $color={true}>로그아웃</ListText>
+            <ListText
+              $color={true}
+              onClick={() => {
+                logOut();
+              }}
+            >
+              로그아웃
+            </ListText>
           </ListItemWrapper>
         </ListBox>
       </ContentBox>
@@ -154,10 +163,6 @@ const ListItemWrapper = styled.div`
   gap: 16px;
   padding: 28px 0;
   border-bottom: 1px solid rgba(1, 1, 1, 0.1);
-
-  &:hover {
-    cursor: pointer;
-  }
 `;
 
 const ListIcon = styled(FontAwesomeIcon)<{ $color: boolean }>`
@@ -167,6 +172,9 @@ const ListIcon = styled(FontAwesomeIcon)<{ $color: boolean }>`
 
 const ListText = styled.div<{ $color: boolean }>`
   color: ${({ $color }) => ($color ? "#f50100" : "#222")};
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 export default Menu;

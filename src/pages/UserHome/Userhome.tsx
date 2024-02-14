@@ -1,8 +1,6 @@
 import styled from "styled-components";
 import { componentMount } from "../../styles/Animation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronLeft } from "@fortawesome/free-solid-svg-icons";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
@@ -10,20 +8,19 @@ import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getUser } from "../../api/userApi";
 import {
   checkFollowStatus,
-  follow,
   getFollowers,
   getFollowings,
-  unFollow,
+  toggleFollow,
 } from "../../api/connectApi";
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import UserContext from "../../contexts/UserContext";
 import FeedList from "./components/FeedList";
 import { getUserFeeds } from "../../api/postApi";
-import UserHomeSkeletonUi from "./components/UserHomeSkeletonUi";
+import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
 
 function UserHome() {
   const { authUserId } = useContext(UserContext);
@@ -31,14 +28,21 @@ function UserHome() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const myPage = authUserId === userId;
+  const previousStatus = useRef<boolean>();
 
-  const { data: user } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery({
     queryKey: ["user", userId],
     queryFn: () => {
       if (userId) {
         return getUser(userId);
       }
     },
+    enabled: !!userId,
+  });
+
+  const { data: feeds, isLoading: feedsLoading } = useQuery({
+    queryKey: ["feeds", userId],
+    queryFn: () => getUserFeeds(userId),
     enabled: !!userId,
   });
 
@@ -60,101 +64,54 @@ function UserHome() {
     enabled: !myPage,
   });
 
-  const { data: feeds, isLoading: feedsLoading } = useQuery({
-    queryKey: ["feeds", userId],
-    queryFn: () => getUserFeeds(userId),
-    enabled: !!userId,
-  });
+  const toggleFollowMutation = useDebouncedMutation(
+    async (action: string) => toggleFollow(action, userId),
+    {
+      onMutate: async () => {
+        await queryClient.cancelQueries({
+          queryKey: ["followStatus", userId],
+        });
 
-  const updateFollowStatus = (newStatus: boolean | undefined) => {
-    queryClient.setQueryData(["followStatus", userId], newStatus);
-  };
+        return { previousStatus: previousStatus.current };
+      },
+      onError: (
+        error: Error,
+        variables: string,
+        context: {
+          previousStatus: boolean;
+        }
+      ) => {
+        if (context) {
+          queryClient.setQueryData(
+            ["followStatus", userId],
+            context.previousStatus
+          );
+        }
+      },
+    }
+  );
 
-  const followMutation = useMutation({
-    mutationFn: async () => follow(userId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["followStatus", userId],
-      });
+  function handleToggleFollow() {
+    const currentStatus = queryClient.getQueryData<boolean>([
+      "followStatus",
+      userId,
+    ]);
 
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "followStatus",
-        userId,
-      ]);
+    previousStatus.current = currentStatus;
 
-      updateFollowStatus(true);
+    queryClient.setQueryData(["followStatus", userId], !currentStatus);
 
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        updateFollowStatus(context.previousStatus);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["followStatus", userId],
-      });
-    },
-  });
-
-  const unFollowMutation = useMutation({
-    mutationFn: async () => unFollow(userId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["followStatus", userId],
-      });
-
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "followStatus",
-        userId,
-      ]);
-
-      updateFollowStatus(false);
-
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        updateFollowStatus(context.previousStatus);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["followStatus", userId],
-      });
-    },
-  });
-
-  function handleFollow() {
-    followMutation.mutate();
+    toggleFollowMutation.mutate(!currentStatus ? "follow" : "unFollow");
   }
 
-  function handleUnFollow() {
-    unFollowMutation.mutate();
-  }
-
-  // const isLoading =
-  //   userLoading ||
-  //   followerLoading ||
-  //   followingLoading ||
-  //   feedsLoading ||
-  //   followStatusLoading;
+  const userHomeLoading =
+    userLoading || feedsLoading || followerLoading || followingLoading;
 
   return (
     <Container>
       <ContentBox>
         <ProfileBox $isExist={user?.coverImage}>
           <Background>
-            <IconWrapper>
-              <BackIcon
-                icon={faChevronLeft}
-                onClick={() => {
-                  navigate(-1);
-                }}
-              />
-              <ListIcon icon={faEllipsisVertical} />
-            </IconWrapper>
             <ProfileInfoWrapper>
               <ProfileImageWrapper>
                 {user?.profileImage ? (
@@ -164,6 +121,7 @@ function UserHome() {
                 )}
               </ProfileImageWrapper>
               <NickName>{user?.nickName}</NickName>
+              <UserName>{user?.name}</UserName>
               <ButtonWrapper>
                 {myPage && (
                   <EditBtn
@@ -177,12 +135,12 @@ function UserHome() {
                 )}
                 {!myPage &&
                   (followStatus ? (
-                    <UnFollowBtn onClick={handleUnFollow}>
+                    <UnFollowBtn onClick={handleToggleFollow}>
                       <UnFollowText>팔로잉</UnFollowText>
                       <UnFollowIcon icon={faCircleCheck} />
                     </UnFollowBtn>
                   ) : (
-                    <FollowBtn onClick={handleFollow}>
+                    <FollowBtn onClick={handleToggleFollow}>
                       <FollowText>팔로우</FollowText>
                       <FollowIcon icon={faCirclePlus} />
                     </FollowBtn>
@@ -199,7 +157,7 @@ function UserHome() {
         </ProfileBox>
         <CountBox>
           <CountWrapper>
-            {feedsLoading ? (
+            {userHomeLoading ? (
               <SpinnerIcon icon={faSpinner} spinPulse />
             ) : (
               <CountNumber>{feeds?.length}</CountNumber>
@@ -211,7 +169,7 @@ function UserHome() {
               navigate(`/users/${userId}/follower`);
             }}
           >
-            {followerLoading ? (
+            {userHomeLoading ? (
               <SpinnerIcon icon={faSpinner} spinPulse />
             ) : (
               <CountNumber>{followers?.length}</CountNumber>
@@ -223,7 +181,7 @@ function UserHome() {
               navigate(`/users/${userId}/following`);
             }}
           >
-            {followingLoading ? (
+            {userHomeLoading ? (
               <SpinnerIcon icon={faSpinner} spinPulse />
             ) : (
               <CountNumber>{followings?.length}</CountNumber>
@@ -231,7 +189,7 @@ function UserHome() {
             <CountTitle>팔로잉</CountTitle>
           </CountWrapper>
         </CountBox>
-        {feedsLoading ? <UserHomeSkeletonUi /> : <FeedList feeds={feeds} />}
+        <FeedList feeds={feeds} userHomeLoading={userHomeLoading} />
       </ContentBox>
     </Container>
   );
@@ -264,30 +222,6 @@ const Background = styled.div`
   background-color: rgba(1, 1, 1, 0.4);
 `;
 
-const IconWrapper = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 150px;
-`;
-
-const BackIcon = styled(FontAwesomeIcon)`
-  font-size: 28px;
-  color: #fff;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
-const ListIcon = styled(FontAwesomeIcon)`
-  font-size: 28px;
-  color: #fff;
-
-  &:hover {
-    cursor: pointer;
-  }
-`;
-
 const ProfileInfoWrapper = styled.div``;
 
 const ProfileImageWrapper = styled.div`
@@ -316,10 +250,14 @@ const ProfileIcon = styled(FontAwesomeIcon)`
 `;
 
 const NickName = styled.div`
-  margin-bottom: 30px;
   color: #fff;
   font-size: 20px;
   font-weight: 500;
+`;
+
+const UserName = styled.div`
+  color: #fff;
+  font-size: 14px;
 `;
 
 const ButtonWrapper = styled.div`

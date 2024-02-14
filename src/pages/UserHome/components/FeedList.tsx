@@ -6,9 +6,10 @@ import { faClone } from "@fortawesome/free-solid-svg-icons";
 
 interface Props {
   feeds: DocumentData[] | undefined;
+  userHomeLoading: boolean;
 }
 
-const FeedList: React.FC<Props> = ({ feeds }) => {
+const FeedList: React.FC<Props> = ({ feeds, userHomeLoading }) => {
   const navigate = useNavigate();
 
   if (!feeds) {
@@ -18,7 +19,9 @@ const FeedList: React.FC<Props> = ({ feeds }) => {
   return (
     <Container>
       {feeds.map((feed) => {
-        return (
+        return userHomeLoading ? (
+          <SkeletonUi key={feed.id} />
+        ) : (
           <FeedListItem
             key={feed.id}
             $imageUrl={feed.feedImages[0]}
@@ -60,6 +63,12 @@ const CopyIcon = styled(FontAwesomeIcon)`
   right: 10px;
   color: #fff;
   font-size: 18px;
+`;
+
+const SkeletonUi = styled.div`
+  width: 100%;
+  height: 165px;
+  background-color: rgba(1, 1, 1, 0.1);
 `;
 
 export default FeedList;

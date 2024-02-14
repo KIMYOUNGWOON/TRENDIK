@@ -4,10 +4,12 @@ import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { faCircleCheck } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { checkFollowStatus, follow, unFollow } from "../../../api/connectApi";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { checkFollowStatus, toggleFollow } from "../../../api/connectApi";
 import SkeletonUi from "./SkeletonUi";
 import { DocumentData } from "firebase/firestore";
+import { useRef } from "react";
+import { useDebouncedMutation } from "../../../hooks/useDebouncedMutation";
 
 interface Props {
   user: DocumentData;
@@ -18,81 +20,54 @@ interface Props {
 const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const previousStatus = useRef<boolean>();
 
   const { data, isLoading: followStatusLoading } = useQuery({
     queryKey: ["followStatus", user.userId],
     queryFn: async () => await checkFollowStatus(user.userId),
   });
 
-  const updateFollowStatus = (newStatus: boolean | undefined) => {
-    queryClient.setQueryData(["followStatus", user.userId], newStatus);
-  };
+  const toggleFollowMutation = useDebouncedMutation(
+    async (action: string) => toggleFollow(action, user.userId),
+    {
+      onMutate: async () => {
+        await queryClient.cancelQueries({
+          queryKey: ["followStatus", user.userId],
+        });
 
-  const followMutation = useMutation({
-    mutationFn: async () => follow(user.userId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["followStatus", user.userId],
-      });
+        return { previousStatus: previousStatus.current };
+      },
+      onError: (
+        error: Error,
+        variables: string,
+        context: {
+          previousStatus: boolean;
+        }
+      ) => {
+        if (context) {
+          queryClient.setQueryData(
+            ["followStatus", user.userId],
+            context.previousStatus
+          );
+        }
+      },
+    }
+  );
 
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "followStatus",
-        user.userId,
-      ]);
+  function handleToggleFollow() {
+    const currentStatus = queryClient.getQueryData<boolean>([
+      "followStatus",
+      user.userId,
+    ]);
 
-      updateFollowStatus(true);
+    previousStatus.current = currentStatus;
 
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        updateFollowStatus(context.previousStatus);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["followStatus", user.userId],
-      });
-    },
-  });
+    queryClient.setQueryData(["followStatus", user.userId], !currentStatus);
 
-  const unFollowMutation = useMutation({
-    mutationFn: async () => unFollow(user.userId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({
-        queryKey: ["followStatus", user.userId],
-      });
-
-      const previousStatus = queryClient.getQueryData<boolean>([
-        "followStatus",
-        user.userId,
-      ]);
-
-      updateFollowStatus(false);
-
-      return { previousStatus };
-    },
-    onError: (error, variables, context) => {
-      if (context) {
-        updateFollowStatus(context.previousStatus);
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["followStatus", user.userId],
-      });
-    },
-  });
-
-  function handleFollow() {
-    followMutation.mutate();
+    toggleFollowMutation.mutate(!currentStatus ? "follow" : "unFollow");
   }
 
-  function handleUnFollow() {
-    unFollowMutation.mutate();
-  }
-
-  if (followStatusLoading || usersLoading || authUserId === "") {
+  if (followStatusLoading || usersLoading) {
     return <SkeletonUi />;
   }
 
@@ -112,12 +87,12 @@ const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
       </ProfileWrapper>
       {authUserId !== user.userId &&
         (data ? (
-          <UnFollowBtn onClick={handleUnFollow}>
+          <UnFollowBtn onClick={handleToggleFollow}>
             <UnFollowIcon icon={faCircleCheck} />
             <UnFollowText>팔로잉</UnFollowText>
           </UnFollowBtn>
         ) : (
-          <FollowBtn onClick={handleFollow}>
+          <FollowBtn onClick={handleToggleFollow}>
             <FollowIcon icon={faCirclePlus} />
             <FollowText>팔로우</FollowText>
           </FollowBtn>

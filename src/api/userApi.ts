@@ -1,5 +1,6 @@
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -8,6 +9,7 @@ import { FirebaseError } from "firebase/app";
 import {
   DocumentData,
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -16,7 +18,7 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { ImageUpload, UpdateData, User } from "./types";
+import { ImageUpload, User } from "./types";
 import {
   deleteObject,
   getDownloadURL,
@@ -24,7 +26,15 @@ import {
   uploadBytes,
 } from "firebase/storage";
 
-export async function authSignUp({ email, password, name, nickName }: User) {
+export async function authSignUp({
+  email,
+  password,
+  name,
+  nickName,
+  gender,
+  height,
+  weight,
+}: User) {
   try {
     const userCredential = await createUserWithEmailAndPassword(
       auth,
@@ -37,6 +47,9 @@ export async function authSignUp({ email, password, name, nickName }: User) {
       email,
       name,
       nickName,
+      gender,
+      height,
+      weight,
       bio: "",
       profileImage: "",
       coverImage: "",
@@ -94,14 +107,9 @@ export async function getUser(userId: string) {
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
     const data = docSnap.data();
-    if (data) {
-      return data;
-    } else {
-      return null;
-    }
+    return data;
   } catch (e) {
     console.log(e);
-    return null;
   }
 }
 
@@ -120,21 +128,26 @@ export async function getUsers() {
       users.push(doc.data());
     });
 
-    return users;
+    if (querySnapshot.empty) {
+      return [];
+    } else {
+      return users;
+    }
   } catch (error) {
     console.log(error);
+    return [];
   }
 }
 
-export async function updateProfile({ userId, key, value }: UpdateData) {
+export async function updateProfile(updateData: { [x: string]: string }) {
+  const authUser = auth.currentUser;
+
+  if (!authUser) return;
+
   try {
-    if (userId) {
-      const userRef = doc(db, "users", userId);
-      await updateDoc(userRef, {
-        [key]: value,
-      });
-      return await getUser(userId);
-    }
+    const userId = authUser.uid;
+    const userRef = doc(db, "users", userId);
+    await updateDoc(userRef, updateData);
   } catch (e) {
     console.log(e);
   }
@@ -143,7 +156,6 @@ export async function updateProfile({ userId, key, value }: UpdateData) {
 export async function checkNickName(nickName: string) {
   const usersCollectionRef = collection(db, "users");
   const q = query(usersCollectionRef, where("nickName", "==", nickName));
-
   try {
     const querySnapshot = await getDocs(q);
     return querySnapshot.empty;
@@ -211,5 +223,18 @@ export async function imageReset(profileImage: string, coverImage: string) {
   } catch (error) {
     console.log(error);
     return null;
+  }
+}
+
+export async function deleteAccount() {
+  const authUser = auth.currentUser;
+  try {
+    if (authUser) {
+      await deleteUser(authUser);
+      const docRef = doc(db, "users", authUser.uid);
+      await deleteDoc(docRef);
+    }
+  } catch (error) {
+    console.log(error);
   }
 }

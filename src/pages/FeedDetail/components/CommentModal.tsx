@@ -47,22 +47,36 @@ const CommentModal: React.FC<Props> = ({
     rootMargin: " 0px 0px -138px 0px",
     root: rootRef.current,
   });
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
   const { data: authUser } = useQuery({
     queryKey: ["authUser", authUserId],
     queryFn: () => getUser(authUserId),
   });
 
-  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
-    useInfiniteQuery({
-      queryKey: ["comments", postId],
-      queryFn: ({ pageParam }) => getComments(postId, 10, pageParam),
-      initialPageParam: null,
-      getNextPageParam: (lastPage: {
-        comments: DocumentData[];
-        lastVisible: DocumentSnapshot | null;
-      }) => lastPage.lastVisible ?? null,
-    });
+  const {
+    data: comments,
+    fetchNextPage,
+    hasNextPage,
+    isFetching,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["comments", postId],
+    queryFn: ({ pageParam }) => getComments(postId, 10, pageParam),
+    initialPageParam: null,
+    getNextPageParam: (lastPage: {
+      comments: DocumentData[];
+      lastVisible: DocumentSnapshot | null;
+    }) => lastPage.lastVisible ?? null,
+  });
+
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.focus();
+      textAreaRef.current.style.height = "auto";
+      textAreaRef.current.style.height = `${textAreaRef.current.scrollHeight}px`;
+    }
+  }, [inputValue]);
 
   useEffect(() => {
     if (!isFetching && initialLoading) {
@@ -74,7 +88,7 @@ const CommentModal: React.FC<Props> = ({
     }
   }, [isFetching, initialLoading, inView, hasNextPage, fetchNextPage]);
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: ChangeEvent<HTMLTextAreaElement>) {
     const { value } = e.target;
     setInputValue(value);
   }
@@ -132,8 +146,7 @@ const CommentModal: React.FC<Props> = ({
         );
       }
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["feed", postId] });
     },
   });
@@ -156,34 +169,38 @@ const CommentModal: React.FC<Props> = ({
         />
       </Header>
       <ContentBox ref={rootRef}>
-        <CommentList>
-          {data?.pages.map((page, i) => {
-            return (
-              <PageWrapper key={i}>
-                {page.comments.map((comment) => {
-                  return (
-                    <CommentListItem
-                      key={comment.id}
-                      comment={comment}
-                      postId={postId}
-                    />
-                  );
-                })}
-              </PageWrapper>
-            );
-          })}
-        </CommentList>
+        {comments?.pages[0].comments.length === 0 ? (
+          <CommentEmptyBox>
+            <CommentEmptyText>아직 댓글이 없습니다</CommentEmptyText>
+            <CommentLeaveText>댓글을 남겨보세요</CommentLeaveText>
+          </CommentEmptyBox>
+        ) : (
+          <CommentList>
+            {comments?.pages.map((page, i) => {
+              return (
+                <PageWrapper key={i}>
+                  {page.comments.map((comment) => {
+                    return (
+                      <CommentListItem
+                        key={comment.id}
+                        authUserId={authUserId}
+                        comment={comment}
+                        postId={postId}
+                      />
+                    );
+                  })}
+                </PageWrapper>
+              );
+            })}
+          </CommentList>
+        )}
         {isFetchingNextPage && (
           <LoadingWrapper>
             <SpinnerIcon icon={faSpinner} spinPulse />
           </LoadingWrapper>
         )}
-        {initialLoading ? (
-          <div>로딩</div>
-        ) : (
-          data?.pages[0].comments.length === 10 && (
-            <Observer ref={ref}></Observer>
-          )
+        {!initialLoading && comments?.pages[0].comments.length === 10 && (
+          <Observer ref={ref}></Observer>
         )}
         <CommentForm onSubmit={handleSubmit}>
           {authUser?.profileImage ? (
@@ -191,14 +208,15 @@ const CommentModal: React.FC<Props> = ({
           ) : (
             <ProfileIcon icon={faCircleUser} />
           )}
-          <CommentInput
+          <CommentTextArea
             name="comment"
             placeholder="댓글 달기..."
             onChange={handleChange}
             value={inputValue}
+            ref={textAreaRef}
           />
           {inputValue ? (
-            <CommentButton type="submit">
+            <CommentButton>
               <CommentButtonIcon icon={faArrowUpLong} />
             </CommentButton>
           ) : (
@@ -248,13 +266,11 @@ const CloseBtn = styled(FontAwesomeIcon)`
 
 const ContentBox = styled.div`
   height: 100%;
-  padding-bottom: 140px;
+  padding-bottom: 160px;
   overflow-y: scroll;
 `;
 
-const CommentList = styled.div`
-  padding: 14px;
-`;
+const CommentList = styled.div``;
 
 const PageWrapper = styled.div``;
 
@@ -269,21 +285,19 @@ const CommentForm = styled.form`
   padding: 20px;
   border-top: 1px solid rgba(1, 1, 1, 0.1);
   background-color: #fff;
+  z-index: 1;
 `;
 
-const CommentInput = styled.input`
+const CommentTextArea = styled.textarea`
   flex: 1;
-  height: 44px;
-  padding: 0 58px 0 18px;
+  padding: 10px 56px 10px 14px;
   border: 1px solid rgba(1, 1, 1, 0.2);
-  border-radius: 10px;
-  outline: none;
-  transition: 0.3s;
+  border-radius: 8px;
   color: rgba(1, 1, 1, 0.8);
-
-  &:focus {
-    border: 1px solid rgba(1, 1, 1, 0.9);
-  }
+  outline: none;
+  resize: none;
+  transition: 0.3s;
+  overflow-y: hidden;
 
   &::placeholder {
     color: rgba(1, 1, 1, 0.3);
@@ -358,6 +372,25 @@ const LoadingWrapper = styled.div`
 const SpinnerIcon = styled(FontAwesomeIcon)`
   color: rgba(1, 1, 1, 0.8);
   font-size: 30px;
+`;
+
+const CommentEmptyBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  height: 100%;
+`;
+
+const CommentEmptyText = styled.div`
+  font-size: 22px;
+  font-weight: 600;
+`;
+
+const CommentLeaveText = styled.div`
+  color: rgba(1, 1, 1, 0.4);
+  font-size: 14px;
 `;
 
 export default CommentModal;
