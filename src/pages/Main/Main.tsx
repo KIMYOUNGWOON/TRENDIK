@@ -10,17 +10,34 @@ import { useContext, useEffect, useState } from "react";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import UserContext from "../../contexts/UserContext";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/bundle";
+
+const FilterTypes = [
+  { id: 1, type: "gender", value: "man", text: "남성" },
+  { id: 2, type: "gender", value: "Woman", text: "여성" },
+  { id: 3, type: "style", value: "romantic", text: "로맨틱" },
+  { id: 4, type: "style", value: "modern", text: "모던" },
+  { id: 5, type: "style", value: "minimal", text: "미니멀" },
+  { id: 6, type: "style", value: "vintage", text: "빈티지" },
+  { id: 7, type: "style", value: "street", text: "스트릿" },
+  { id: 8, type: "style", value: "sporty", text: "스포티" },
+  { id: 9, type: "style", value: "amekaji", text: "아메카지" },
+  { id: 10, type: "style", value: "casual", text: "캐주얼" },
+  { id: 11, type: "style", value: "classic", text: "클래식" },
+];
 
 function Main() {
   const { authUserId } = useContext(UserContext);
+  const [sort, setSort] = useState("createdAt");
   const [initialLoading, setInitialLoading] = useState(true);
   const { ref, inView } = useInView();
   const navigate = useNavigate();
 
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery({
-      queryKey: ["allFeeds", authUserId],
-      queryFn: ({ pageParam }) => getAllFeeds(8, pageParam),
+      queryKey: ["allFeeds", sort],
+      queryFn: ({ pageParam }) => getAllFeeds(10, pageParam, sort),
       getNextPageParam: (lastPage: {
         feedList: DocumentData[];
         lastVisible: DocumentSnapshot | null;
@@ -51,6 +68,43 @@ function Main() {
         />
       </Header>
       <ContentBox>
+        <FilterList>
+          <Swiper spaceBetween={2} slidesPerView={5}>
+            {FilterTypes.map((filter) => {
+              return (
+                <SwiperSlide key={filter.id}>
+                  <FilterListItem
+                    onClick={() => {
+                      navigate(`/feeds/filter?${filter.type}=${filter.text}`);
+                      window.scrollTo(0, 0);
+                    }}
+                  >
+                    <ListItemImage />
+                    <FilterListText>{filter.text}</FilterListText>
+                  </FilterListItem>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+        </FilterList>
+        <SortWrapper>
+          <LikeSort
+            $isClicked={sort === "likeCount"}
+            onClick={() => {
+              setSort("likeCount");
+            }}
+          >
+            인기순
+          </LikeSort>
+          <LatestSort
+            $isClicked={sort === "createdAt"}
+            onClick={() => {
+              setSort(`createdAt`);
+            }}
+          >
+            최신순
+          </LatestSort>
+        </SortWrapper>
         <FeedListBox>
           {data?.pages.map((group, i) => {
             return (
@@ -95,7 +149,7 @@ const Header = styled.div`
   padding: 0 30px;
   background-color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  z-index: 1;
+  z-index: 2;
 `;
 
 const TextLogo = styled.div`
@@ -114,6 +168,60 @@ const MenuButton = styled(FontAwesomeIcon)`
 
 const ContentBox = styled.main`
   padding: 100px 10px;
+`;
+
+const FilterList = styled.ul`
+  margin-bottom: 60px;
+`;
+
+const FilterListItem = styled.li`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const ListItemImage = styled.div`
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background-color: rgba(1, 1, 1, 0.1);
+`;
+
+const FilterListText = styled.div`
+  font-size: 14px;
+`;
+
+const SortWrapper = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+`;
+
+const LikeSort = styled.div<{ $isClicked: boolean }>`
+  padding-right: 10px;
+  border-right: 1px solid rgba(1, 1, 1, 0.3);
+  color: ${({ $isClicked }) =>
+    $isClicked ? "rgba(1, 1, 1, 0.9)" : "rgba(1, 1, 1, 0.4)"};
+  font-weight: ${({ $isClicked }) => ($isClicked ? "500" : "400")};
+  font-size: 14px;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const LatestSort = styled.div<{ $isClicked: boolean }>`
+  padding-left: 10px;
+  color: ${({ $isClicked }) =>
+    $isClicked ? "rgba(1, 1, 1, 0.9)" : "rgba(1, 1, 1, 0.4)"};
+  font-size: 14px;
+  font-weight: ${({ $isClicked }) => ($isClicked ? "500" : "400")};
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 const FeedListBox = styled.div``;

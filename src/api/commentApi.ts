@@ -71,7 +71,11 @@ export async function getComments(
   }
 }
 
-export async function postComment(comment: string, feedId: string | undefined) {
+export async function postComment(
+  type: string,
+  content: string,
+  feedId: string | undefined
+) {
   const authUser = auth.currentUser;
   try {
     if (authUser && feedId) {
@@ -82,7 +86,8 @@ export async function postComment(comment: string, feedId: string | undefined) {
         userId: authUserId,
         userInfo,
         feedId,
-        comment,
+        type,
+        [type]: content,
         likeCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),

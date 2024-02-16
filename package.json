@@ -15,6 +15,8 @@
     "@fortawesome/free-regular-svg-icons": "^6.5.1",
     "@fortawesome/free-solid-svg-icons": "^6.5.1",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@giphy/js-fetch-api": "^5.3.0",
+    "@giphy/react-components": "^9.2.3",
     "@tanstack/react-query": "^5.17.19",
     "@tanstack/react-query-devtools": "^5.17.21",
     "@types/react-slick": "^0.23.13",
@@ -25,13 +27,15 @@
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
+    "react-id-swiper": "^4.0.0",
     "react-image-file-resizer": "^0.4.8",
     "react-intersection-observer": "^9.7.0",
     "react-router-dom": "^6.21.3",
     "react-slick": "^0.30.1",
     "slick-carousel": "^1.8.1",
     "styled-components": "^6.1.8",
-    "styled-reset": "^4.5.2"
+    "styled-reset": "^4.5.2",
+    "swiper": "^11.0.6"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.202",

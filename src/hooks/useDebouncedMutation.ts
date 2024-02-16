@@ -14,7 +14,7 @@ export function useDebouncedMutation(
   const debouncedMutationFn = useRef(
     debounce((variables) => {
       mutation.mutate(variables);
-    }, 400)
+    }, 300)
   );
 
   useEffect(() => {

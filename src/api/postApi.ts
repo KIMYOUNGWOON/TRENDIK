@@ -36,6 +36,7 @@ export async function uploadFeed(postData: PostData) {
         id: "",
         userId: userId,
         feedImages: [],
+        commentActive: true,
         commentCount: 0,
         likeCount: 0,
         createdAt: new Date(),
@@ -69,17 +70,19 @@ export async function uploadFeed(postData: PostData) {
 }
 
 export async function getAllFeeds(
-  pageSize: number = 6,
-  lastDoc: DocumentSnapshot | null = null
+  pageSize: number = 10,
+  lastDoc: DocumentSnapshot | null = null,
+  sort: string = "createdAt"
 ) {
+  console.log(sort);
   try {
     const collectionRef = collection(db, "feeds");
-    let q = query(collectionRef, orderBy("createdAt", "desc"), limit(pageSize));
+    let q = query(collectionRef, orderBy(sort, "desc"), limit(pageSize));
 
     if (lastDoc) {
       q = query(
         collectionRef,
-        orderBy("createdAt", "desc"),
+        orderBy(sort, "desc"),
         startAfter(lastDoc),
         limit(pageSize)
       );
@@ -153,6 +156,21 @@ export async function getFeed(postId: string | undefined) {
   }
 }
 
+export async function getFeeds() {
+  try {
+    const collectionRef = collection(db, "feeds");
+    const querySnapshot = await getDocs(collectionRef);
+    const feeds: DocumentData[] = [];
+    querySnapshot.forEach((doc) => {
+      feeds.push(doc.data());
+    });
+    return feeds;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
 export async function editFeed(
   postId: string | undefined,
   updateData: FeedUpdateData
@@ -161,6 +179,11 @@ export async function editFeed(
     if (postId) {
       if (updateData.imageFiles.length === 0) {
         const data = {
+          hashTag: updateData.hashTag,
+          outer: updateData.outer,
+          top: updateData.top,
+          bottom: updateData.bottom,
+          shoes: updateData.shoes,
           content: updateData.content,
           gender: updateData.gender,
           style: updateData.style,
@@ -190,6 +213,11 @@ export async function editFeed(
         );
         const images = await Promise.all(imageUploadPromises);
         const data = {
+          hashTag: updateData.hashTag,
+          outer: updateData.outer,
+          top: updateData.top,
+          bottom: updateData.bottom,
+          shoes: updateData.shoes,
           content: updateData.content,
           gender: updateData.gender,
           style: updateData.style,
@@ -221,6 +249,63 @@ export async function deleteFeed(
         await deleteObject(desertRef);
       }
     }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function activeComment(
+  action: string,
+  postId: string | undefined
+) {
+  try {
+    if (postId) {
+      const value = action === "able" ? true : false;
+      const docRef = doc(db, "feeds", postId);
+      await updateDoc(docRef, { commentActive: value });
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getDifferentPost(userId: string, postId: string) {
+  try {
+    const collectionRef = collection(db, "feeds");
+    const q = query(
+      collectionRef,
+      where("userId", "==", userId),
+      where("id", "!=", postId)
+    );
+    const querySnapshot = await getDocs(q);
+    const differentPost: DocumentData[] = [];
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((doc) => {
+        differentPost.push(doc.data());
+      });
+    }
+    return differentPost;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getSimilarPost(userId: string, style: string) {
+  try {
+    const collectionRef = collection(db, "feeds");
+    const q = query(
+      collectionRef,
+      where("userId", "!=", userId),
+      where("style", "==", style)
+    );
+    const querySnapshot = await getDocs(q);
+    const differentPost: DocumentData[] = [];
+    if (!querySnapshot.empty) {
+      querySnapshot.forEach((doc) => {
+        differentPost.push(doc.data());
+      });
+    }
+    return differentPost;
   } catch (error) {
     console.log(error);
   }

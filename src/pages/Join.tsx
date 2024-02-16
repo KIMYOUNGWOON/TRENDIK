@@ -30,9 +30,9 @@ const INPUT_VALUE = {
   name: "",
   nickName: "",
   gender: "",
-  height: 0,
-  weight: 0,
-  shoesSize: 0,
+  height: "",
+  weight: "",
+  shoesSize: "",
   serviceAgree: false,
   personalInfoAgree: false,
 };
@@ -104,6 +104,7 @@ function Join() {
       gender: inputValue.gender,
       height: inputValue.height,
       weight: inputValue.weight,
+      shoesSize: inputValue.shoesSize,
     };
 
     signUpMutation.mutate(newUser);

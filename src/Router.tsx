@@ -13,6 +13,10 @@ import FollowerFollowing from "./pages/FollowerFollowing/FollowerFollowing";
 import PostUpload from "./pages/PostUpload/PostUpload";
 import FeedDetail from "./pages/FeedDetail/FeedDetail";
 import FeedEdit from "./pages/FeedEdit/FeedEdit";
+import PickFeed from "./pages/PickFeed/PickFeed";
+import FeedLookAround from "./pages/FeedLookAround/FeedLookAround";
+import SearchFeeds from "./pages/SearchFeeds/SearchFeeds";
+import FilterFeeds from "./pages/FilterFeeds/FilterFeeds";
 
 const router = createBrowserRouter([
   {
@@ -27,8 +31,12 @@ const router = createBrowserRouter([
       { path: "/users/:userId", element: <UserHome /> },
       { path: "/users/:userId/:select", element: <FollowerFollowing /> },
       { path: "/posting", element: <PostUpload /> },
+      { path: "/feeds", element: <FeedLookAround /> },
+      { path: "/feeds/search", element: <SearchFeeds /> },
+      { path: "/feeds/filter", element: <FilterFeeds /> },
       { path: "/feeds/:postId", element: <FeedDetail /> },
       { path: "/feeds/:postId/edit", element: <FeedEdit /> },
+      { path: "/:userId/picks", element: <PickFeed /> },
     ],
   },
   {

@@ -62,7 +62,7 @@ const CopyIcon = styled(FontAwesomeIcon)`
   top: 10px;
   right: 10px;
   color: #fff;
-  font-size: 18px;
+  font-size: 16px;
 `;
 
 const SkeletonUi = styled.div`

@@ -1,6 +1,4 @@
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 
 function FeedDetailSkeletonUi() {
   return (
@@ -8,9 +6,11 @@ function FeedDetailSkeletonUi() {
       <FeedHeader>
         <ProfileWrapper>
           <ProfileImage />
-          <NickName />
+          <Wrapper>
+            <NickName />
+            <BodyInfo />
+          </Wrapper>
         </ProfileWrapper>
-        <EllipsisBtn icon={faEllipsisVertical} />
       </FeedHeader>
       <FeedImage />
     </Container>
@@ -42,14 +42,22 @@ const ProfileImage = styled.div`
   background-color: rgba(1, 1, 1, 0.1);
 `;
 
+const Wrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+`;
+
 const NickName = styled.div`
   width: 90px;
   height: 18px;
   background-color: rgba(1, 1, 1, 0.1);
 `;
 
-const EllipsisBtn = styled(FontAwesomeIcon)`
-  font-size: 24px;
+const BodyInfo = styled.div`
+  width: 180px;
+  height: 14px;
+  background-color: rgba(1, 1, 1, 0.1);
 `;
 
 const FeedImage = styled.div`

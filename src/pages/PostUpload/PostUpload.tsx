@@ -24,20 +24,20 @@ import {
 } from "react-beautiful-dnd";
 
 const GENDER = [
-  { id: 1, gender: "man", text: "남성" },
-  { id: 2, gender: "woman", text: "여성" },
+  { id: 1, value: "남성" },
+  { id: 2, value: "여성" },
 ];
 
 const STYLE = [
-  { id: 1, style: "romantic", text: "로맨틱" },
-  { id: 2, style: "modern", text: "모던" },
-  { id: 3, style: "minimal", text: "미니멀" },
-  { id: 4, style: "vintage", text: "빈티지" },
-  { id: 5, style: "street", text: "스트릿" },
-  { id: 6, style: "sporty", text: "스포티" },
-  { id: 7, style: "amecazi", text: "아메카지" },
-  { id: 8, style: "casual", text: "캐주얼" },
-  { id: 9, style: "classic", text: "클래식" },
+  { id: 1, value: "로맨틱" },
+  { id: 2, value: "모던" },
+  { id: 3, value: "미니멀" },
+  { id: 4, value: "빈티지" },
+  { id: 5, value: "스트릿" },
+  { id: 6, value: "스포티" },
+  { id: 7, value: "아메카지" },
+  { id: 8, value: "캐주얼" },
+  { id: 9, value: "클래식" },
 ];
 
 interface PostValue {
@@ -183,7 +183,7 @@ const PostUpload = () => {
       <Header title="스타일 업로드" />
       <ContentBox>
         <Paragraph>
-          이미지 또는 영상을 업로드 하여 <br />
+          이미지 또는 영상을 업로드하여 <br />
           스타일 크리에이터가 되어보세요
         </Paragraph>
         <Guide>
@@ -367,15 +367,15 @@ const PostUpload = () => {
             return (
               <SelectItem
                 key={el.id}
-                $isSelected={postValue.gender === el.gender}
+                $isSelected={postValue.gender === el.value}
                 onClick={() => {
-                  setPostValue({ ...postValue, gender: el.gender });
+                  setPostValue({ ...postValue, gender: el.value });
                 }}
               >
-                {postValue.gender === el.gender && (
+                {postValue.gender === el.value && (
                   <CheckIcon icon={faCircleCheck} />
                 )}
-                {el.text}
+                {el.value}
               </SelectItem>
             );
           })}
@@ -386,15 +386,15 @@ const PostUpload = () => {
             return (
               <SelectItem
                 key={el.id}
-                $isSelected={postValue.style === el.style}
+                $isSelected={postValue.style === el.value}
                 onClick={() => {
-                  setPostValue({ ...postValue, style: el.style });
+                  setPostValue({ ...postValue, style: el.value });
                 }}
               >
-                {postValue.style === el.style && (
+                {postValue.style === el.value && (
                   <CheckIcon icon={faCircleCheck} />
                 )}
-                {el.text}
+                {el.value}
               </SelectItem>
             );
           })}

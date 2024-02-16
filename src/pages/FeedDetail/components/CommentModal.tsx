@@ -25,6 +25,7 @@ import { getComments, postComment } from "../../../api/commentApi";
 import CommentListItem from "./CommentListItem";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 import { useInView } from "react-intersection-observer";
+import GifSearchModal from "./GifSearchModal";
 
 interface Props {
   authUserId: string;
@@ -41,6 +42,7 @@ const CommentModal: React.FC<Props> = ({
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
+  const [gifModal, setGifModal] = useState(false);
   const queryClient = useQueryClient();
   const rootRef = useRef(null);
   const { ref, inView } = useInView({
@@ -62,7 +64,7 @@ const CommentModal: React.FC<Props> = ({
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["comments", postId],
-    queryFn: ({ pageParam }) => getComments(postId, 10, pageParam),
+    queryFn: ({ pageParam }) => getComments(postId, 20, pageParam),
     initialPageParam: null,
     getNextPageParam: (lastPage: {
       comments: DocumentData[];
@@ -94,8 +96,8 @@ const CommentModal: React.FC<Props> = ({
   }
 
   const postCommentMutation = useMutation({
-    mutationFn: (comment: string) => postComment(comment, postId),
-    onMutate: () => {
+    mutationFn: (comment: string) => postComment("comment", comment, postId),
+    onMutate: (comment: string) => {
       queryClient.cancelQueries({
         queryKey: ["comments", postId],
       });
@@ -106,7 +108,8 @@ const CommentModal: React.FC<Props> = ({
         userId: authUserId,
         userInfo: authUser,
         feedId: postId,
-        comment: inputValue,
+        type: "comment",
+        comment,
         likeCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -147,6 +150,7 @@ const CommentModal: React.FC<Props> = ({
       }
     },
     onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
       queryClient.invalidateQueries({ queryKey: ["feed", postId] });
     },
   });
@@ -155,6 +159,10 @@ const CommentModal: React.FC<Props> = ({
     e.preventDefault();
     const temp = inputValue;
     postCommentMutation.mutate(temp);
+  }
+
+  function toggleGIfModal() {
+    setGifModal((prev) => !prev);
   }
 
   return (
@@ -220,10 +228,16 @@ const CommentModal: React.FC<Props> = ({
               <CommentButtonIcon icon={faArrowUpLong} />
             </CommentButton>
           ) : (
-            <GifButton>GIF</GifButton>
+            <GifButton onClick={toggleGIfModal}>GIF</GifButton>
           )}
         </CommentForm>
       </ContentBox>
+      <GifSearchModal
+        gifModal={gifModal}
+        toggleGIfModal={toggleGIfModal}
+        postId={postId}
+        authUser={authUser}
+      />
     </Container>
   );
 };
@@ -240,6 +254,7 @@ const Container = styled.div<{ $isOpened: boolean }>`
   transform: translate(-50%, ${({ $isOpened }) => ($isOpened ? "0" : "100%")});
   transition: 0.3s;
   overflow: hidden;
+  z-index: 1;
 `;
 
 const Header = styled.div`

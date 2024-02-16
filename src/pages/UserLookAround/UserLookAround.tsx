@@ -21,19 +21,15 @@ function UserLookAround() {
     queryFn: getUsers,
   });
 
-  const users = Array.isArray(data) ? data : [];
-
-  const mutationFn = async (value: string) => {
+  const userSearchMutation = useDebouncedMutation(async (value: string) => {
     const filteredUsers = await userSearch(value);
     queryClient.setQueryData(["users", authUserId], filteredUsers);
-  };
-
-  const userSearchMutation = useDebouncedMutation(mutationFn);
+  });
 
   async function handleChange(e: ChangeEvent<HTMLInputElement>) {
     const { value } = e.target;
-    userSearchMutation.mutate(value);
     setInputValue(value);
+    userSearchMutation.mutate(value);
   }
 
   return (
@@ -49,18 +45,25 @@ function UserLookAround() {
             onChange={handleChange}
           />
         </SearchBarBox>
-        <UserListBox>
-          {users.map((user) => {
-            return (
-              <UserListItem
-                key={user.userId}
-                user={user}
-                usersLoading={usersLoading}
-                authUserId={authUserId}
-              />
-            );
-          })}
-        </UserListBox>
+        {data?.length === 0 ? (
+          <UserSearchEmpty>
+            <EmptyText>검색된 사용자가 없습니다.</EmptyText>
+            <ReTryText>다른 닉네임으로 검색해주세요.</ReTryText>
+          </UserSearchEmpty>
+        ) : (
+          <UserListBox>
+            {data?.map((user) => {
+              return (
+                <UserListItem
+                  key={user.userId}
+                  user={user}
+                  usersLoading={usersLoading}
+                  authUserId={authUserId}
+                />
+              );
+            })}
+          </UserListBox>
+        )}
       </ContentBox>
     </Container>
   );
@@ -84,7 +87,6 @@ const SearchIcon = styled(FontAwesomeIcon)`
   position: absolute;
   top: 10px;
   left: 18px;
-  font-size: 18px;
   color: rgba(1, 1, 1, 0.3);
 `;
 
@@ -96,7 +98,7 @@ const SearchInput = styled.input`
   border: none;
   background-color: rgba(1, 1, 1, 0.1);
   color: rgba(1, 1, 1, 0.6);
-  font-size: 16px;
+  font-size: 14px;
   outline: none;
 
   &::placeholder {
@@ -106,5 +108,24 @@ const SearchInput = styled.input`
 `;
 
 const UserListBox = styled.div``;
+
+const UserSearchEmpty = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 50%;
+`;
+
+const EmptyText = styled.div`
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 14px;
+`;
+
+const ReTryText = styled.div`
+  color: rgba(1, 1, 1, 0.5);
+  font-size: 14px;
+`;
 
 export default UserLookAround;

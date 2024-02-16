@@ -1,12 +1,14 @@
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCommentSlash } from "@fortawesome/free-solid-svg-icons";
+import { faComment } from "@fortawesome/free-solid-svg-icons";
 import { faPenToSquare } from "@fortawesome/free-solid-svg-icons";
 import { faTrashCan } from "@fortawesome/free-solid-svg-icons";
-import { deleteFeed } from "../../../api/postApi";
-import { useMutation } from "@tanstack/react-query";
+import { activeComment, deleteFeed } from "../../../api/postApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { Dispatch, SetStateAction } from "react";
+import { DocumentData } from "firebase/firestore";
 
 interface Props {
   setUpModal: boolean;
@@ -14,6 +16,7 @@ interface Props {
   postId: string | undefined;
   userId: string;
   feedImageCount: number;
+  commentActive: boolean;
 }
 
 const FeedSetUpModal: React.FC<Props> = ({
@@ -22,22 +25,68 @@ const FeedSetUpModal: React.FC<Props> = ({
   postId,
   userId,
   feedImageCount,
+  commentActive,
 }) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const deleteFeedMutation = useMutation({
     mutationFn: () => deleteFeed(postId, feedImageCount),
-    onSuccess: () => navigate(`/users/${userId}`),
+    onSuccess: () => navigate(`/users/${userId}`, { replace: true }),
   });
 
   function handleDelete() {
     deleteFeedMutation.mutate();
   }
+
+  const activeCommentMutation = useMutation({
+    mutationFn: (action: string) => activeComment(action, postId),
+    onMutate: (action) => {
+      const previousValue = queryClient.getQueryData(["feed", postId]);
+      const value = action === "able" ? true : false;
+      if (previousValue) {
+        queryClient.setQueryData(["feed", postId], {
+          ...previousValue,
+          commentActive: value,
+        });
+      }
+      setSetUpModal(false);
+
+      return { previousValue };
+    },
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["feed", postId], context?.previousValue);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed", postId] });
+    },
+  });
+
+  function handleActiveComment() {
+    const currentValue: DocumentData | undefined = queryClient.getQueryData([
+      "feed",
+      postId,
+    ]);
+
+    const action = currentValue?.commentActive ? "disable" : "able";
+
+    activeCommentMutation.mutate(action);
+  }
   return (
     <Container $isOpened={setUpModal}>
       <Wrapper>
-        <SetUpIcon icon={faCommentSlash} $color="black" />
-        <SetUpText $color="black">댓글 기능 해제</SetUpText>
+        <SetUpIcon
+          icon={commentActive ? faCommentSlash : faComment}
+          $color="black"
+        />
+        <SetUpText
+          $color="black"
+          onClick={() => {
+            handleActiveComment();
+          }}
+        >
+          {commentActive ? "댓글 기능 해제" : "댓글 기능 활성화"}
+        </SetUpText>
       </Wrapper>
       <Wrapper
         onClick={() => {

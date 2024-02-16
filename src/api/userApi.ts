@@ -34,6 +34,7 @@ export async function authSignUp({
   gender,
   height,
   weight,
+  shoesSize,
 }: User) {
   try {
     const userCredential = await createUserWithEmailAndPassword(
@@ -50,6 +51,7 @@ export async function authSignUp({
       gender,
       height,
       weight,
+      shoesSize,
       bio: "",
       profileImage: "",
       coverImage: "",

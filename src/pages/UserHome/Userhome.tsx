@@ -21,6 +21,7 @@ import UserContext from "../../contexts/UserContext";
 import FeedList from "./components/FeedList";
 import { getUserFeeds } from "../../api/postApi";
 import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
+import UserHomeSkeletonUi from "./components/UserHomeSkeletonUi";
 
 function UserHome() {
   const { authUserId } = useContext(UserContext);
@@ -110,51 +111,59 @@ function UserHome() {
   return (
     <Container>
       <ContentBox>
-        <ProfileBox $isExist={user?.coverImage}>
-          <Background>
-            <ProfileInfoWrapper>
-              <ProfileImageWrapper>
-                {user?.profileImage ? (
-                  <ProfileImage $profileImage={user?.profileImage} />
-                ) : (
-                  <ProfileIcon icon={faCircleUser} />
-                )}
-              </ProfileImageWrapper>
-              <NickName>{user?.nickName}</NickName>
-              <UserName>{user?.name}</UserName>
-              <ButtonWrapper>
-                {myPage && (
-                  <EditBtn
-                    onClick={() => {
-                      navigate("/profile-edit");
-                    }}
-                  >
-                    <EditText>프로필 설정</EditText>
-                    <EditIcon icon={faPenToSquare} />
-                  </EditBtn>
-                )}
-                {!myPage &&
-                  (followStatus ? (
-                    <UnFollowBtn onClick={handleToggleFollow}>
-                      <UnFollowText>팔로잉</UnFollowText>
-                      <UnFollowIcon icon={faCircleCheck} />
-                    </UnFollowBtn>
+        {userHomeLoading ? (
+          <UserHomeSkeletonUi />
+        ) : (
+          <ProfileBox $visible={user?.coverImage}>
+            <Background>
+              <ProfileInfoWrapper>
+                <ProfileImageWrapper>
+                  {user?.profileImage ? (
+                    <ProfileImage $profileImage={user?.profileImage} />
                   ) : (
-                    <FollowBtn onClick={handleToggleFollow}>
-                      <FollowText>팔로우</FollowText>
-                      <FollowIcon icon={faCirclePlus} />
-                    </FollowBtn>
-                  ))}
-                {!myPage && (
-                  <MessageBtn>
-                    <MessageText>메세지</MessageText>
-                    <MessageIcon icon={faEnvelope} />
-                  </MessageBtn>
-                )}
-              </ButtonWrapper>
-            </ProfileInfoWrapper>
-          </Background>
-        </ProfileBox>
+                    <ProfileIcon icon={faCircleUser} />
+                  )}
+                </ProfileImageWrapper>
+                <NickName>{user?.nickName}</NickName>
+                <BodyInfo>
+                  {user?.gender === "남성" ? "MAN" : "WOMAN"} • {user?.height}cm
+                  • {user?.weight}kg • {user?.shoesSize}mm
+                </BodyInfo>
+                <Name>{user?.name}</Name>
+                <ButtonWrapper>
+                  {myPage && (
+                    <EditBtn
+                      onClick={() => {
+                        navigate("/profile-edit");
+                      }}
+                    >
+                      <EditIcon icon={faPenToSquare} />
+                      <EditText>프로필 설정</EditText>
+                    </EditBtn>
+                  )}
+                  {!myPage &&
+                    (followStatus ? (
+                      <UnFollowBtn onClick={handleToggleFollow}>
+                        <UnFollowIcon icon={faCircleCheck} />
+                        <UnFollowText>팔로잉</UnFollowText>
+                      </UnFollowBtn>
+                    ) : (
+                      <FollowBtn onClick={handleToggleFollow}>
+                        <FollowIcon icon={faCirclePlus} />
+                        <FollowText>팔로우</FollowText>
+                      </FollowBtn>
+                    ))}
+                  {!myPage && (
+                    <MessageBtn>
+                      <MessageIcon icon={faEnvelope} />
+                      <MessageText>메세지</MessageText>
+                    </MessageBtn>
+                  )}
+                </ButtonWrapper>
+              </ProfileInfoWrapper>
+            </Background>
+          </ProfileBox>
+        )}
         <CountBox>
           <CountWrapper>
             {userHomeLoading ? (
@@ -205,12 +214,12 @@ const ContentBox = styled.div`
   background-color: #fff;
 `;
 
-const ProfileBox = styled.div<{ $isExist: string }>`
+const ProfileBox = styled.div<{ $visible: string }>`
   position: relative;
   height: 460px;
   margin-bottom: 20px;
   background-color: rgba(1, 1, 1, 0.4);
-  background-image: ${({ $isExist }) => ($isExist ? `url(${$isExist})` : "")};
+  background-image: ${({ $visible }) => ($visible ? `url(${$visible})` : "")};
   background-position: center;
   background-size: cover;
 `;
@@ -222,7 +231,10 @@ const Background = styled.div`
   background-color: rgba(1, 1, 1, 0.4);
 `;
 
-const ProfileInfoWrapper = styled.div``;
+const ProfileInfoWrapper = styled.div`
+  position: absolute;
+  bottom: 40px;
+`;
 
 const ProfileImageWrapper = styled.div`
   display: flex;
@@ -251,13 +263,22 @@ const ProfileIcon = styled(FontAwesomeIcon)`
 
 const NickName = styled.div`
   color: #fff;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 500;
+  margin-bottom: 20px;
 `;
 
-const UserName = styled.div`
+const BodyInfo = styled.div`
+  margin-bottom: 16px;
   color: #fff;
   font-size: 14px;
+  font-weight: 300;
+  letter-spacing: 1px;
+`;
+
+const Name = styled.div`
+  margin-bottom: 20px;
+  color: #fff;
 `;
 
 const ButtonWrapper = styled.div`
@@ -272,7 +293,7 @@ const FollowBtn = styled.div`
   align-items: center;
   gap: 10px;
   height: 38px;
-  padding: 0 12px;
+  padding: 0 14px;
   border-radius: 8px;
   background-color: #1375ff;
   color: #fff;

@@ -28,7 +28,6 @@ export async function getLikeStatus(type: string, typeId: string | undefined) {
     }
   } catch (error) {
     console.log(error);
-    return null;
   }
 }
 

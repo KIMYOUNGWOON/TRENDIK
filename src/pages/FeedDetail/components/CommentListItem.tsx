@@ -176,6 +176,7 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["comments", postId] });
+      queryClient.invalidateQueries({ queryKey: ["feed", postId] });
     },
   });
 
@@ -241,7 +242,10 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
 
   return (
     <Container>
-      <CommentWrapper $isClicked={isClicked}>
+      <CommentWrapper
+        $isClicked={isClicked}
+        $isChecked={comment.type === "gif"}
+      >
         <FlexStartWrapper
           onClick={() => {
             setIsClicked(false);
@@ -269,8 +273,10 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
                   수정 취소
                 </EditCancelButton>
               </EditForm>
-            ) : (
+            ) : comment.type === "comment" ? (
               <Comment>{comment.comment}</Comment>
+            ) : (
+              <GIf src={comment.gif} />
             )}
             <BtnWrapper>
               <ReplyWrapper>
@@ -300,15 +306,17 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
           }}
         />
       </CommentWrapper>
-      <CommentSetUpBox>
-        <EditComment
-          onClick={() => {
-            setEditMode((prev) => !prev);
-            setIsClicked((prev) => !prev);
-          }}
-        >
-          수정
-        </EditComment>
+      <CommentSetUpBox $isChecked={comment.type === "gif"}>
+        {comment.type === "comment" && (
+          <EditComment
+            onClick={() => {
+              setEditMode((prev) => !prev);
+              setIsClicked((prev) => !prev);
+            }}
+          >
+            수정
+          </EditComment>
+        )}
         <DeleteComment
           onClick={() => {
             const check = confirm("정말 삭제하시겠습니까?");
@@ -328,15 +336,17 @@ const Container = styled.div`
   position: relative;
 `;
 
-const CommentWrapper = styled.div<{ $isClicked: boolean }>`
+const CommentWrapper = styled.div<{ $isClicked: boolean; $isChecked: boolean }>`
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px;
   background-color: #fff;
-  transform: ${({ $isClicked }) =>
-    $isClicked ? "translateX(-160px)" : "translateX(0px)"};
+  transform: ${({ $isClicked, $isChecked }) =>
+    $isClicked
+      ? `translateX(${$isChecked ? "-80px" : "-160px"})`
+      : "translateX(0px)"};
   transition: 0.3s;
   z-index: 1;
 `;
@@ -372,6 +382,11 @@ const NickName = styled.div`
 
 const Comment = styled.div`
   font-size: 14px;
+`;
+
+const GIf = styled.img`
+  width: 150px;
+  border-radius: 8px;
 `;
 
 const BtnWrapper = styled.div`
@@ -434,12 +449,12 @@ const EllipsisIcon = styled(FontAwesomeIcon)`
   }
 `;
 
-const CommentSetUpBox = styled.div`
+const CommentSetUpBox = styled.div<{ $isChecked: boolean }>`
   position: absolute;
   top: 0;
   right: 0px;
   display: flex;
-  width: 160px;
+  width: ${({ $isChecked }) => ($isChecked ? "80px" : "160px")};
   height: 100%;
 `;
 

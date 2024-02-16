@@ -27,7 +27,13 @@ const Navigation: React.FC<Props> = ({ authUserId }) => {
             window.scrollTo(0, 0);
           }}
         />
-        <NavIcon icon={faMagnifyingGlass} />
+        <NavIcon
+          icon={faMagnifyingGlass}
+          onClick={() => {
+            navigate("/feeds", { replace: true });
+            window.scrollTo(0, 0);
+          }}
+        />
       </IconWrapper>
       <UploadIcon
         icon={faCirclePlus}
@@ -37,7 +43,13 @@ const Navigation: React.FC<Props> = ({ authUserId }) => {
         }}
       />
       <IconWrapper>
-        <NavIcon icon={faBookmark} />
+        <NavIcon
+          icon={faBookmark}
+          onClick={() => {
+            navigate(`/${authUserId}/picks`);
+            window.scrollTo(0, 0);
+          }}
+        />
         <NavIcon
           icon={faUser}
           onClick={() => {
@@ -67,6 +79,7 @@ const Container = styled.nav`
   background-color: #fff;
   transform: translateX(-50%);
   box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+  z-index: 1;
 `;
 
 const IconWrapper = styled.div`

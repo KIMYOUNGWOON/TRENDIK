@@ -4,9 +4,9 @@ export interface User {
   name?: string;
   nickName?: string;
   gender?: string;
-  height?: number;
-  weight?: number;
-  shoesSize?: number;
+  height?: string;
+  weight?: string;
+  shoesSize?: string;
 }
 
 export interface ImageUpload {
@@ -26,6 +26,11 @@ export interface PostData {
 }
 
 export interface FeedUpdateData {
+  hashTag: { id: number; hashTag: string }[];
+  outer: string;
+  top: string;
+  bottom: string;
+  shoes: string;
   content: string;
   gender: string;
   style: string;
