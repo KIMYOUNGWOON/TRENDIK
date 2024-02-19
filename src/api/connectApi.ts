@@ -1,8 +1,10 @@
 import {
+  OrderByDirection,
   addDoc,
   collection,
   deleteDoc,
   getDocs,
+  orderBy,
   query,
   where,
 } from "firebase/firestore";
@@ -62,9 +64,6 @@ export async function checkFollowStatus(followingId: string | undefined) {
 }
 
 export async function getFollowers(userId: string | undefined) {
-  const authUser = auth.currentUser;
-  if (!authUser) return;
-
   try {
     const followsCollection = collection(db, "follows");
     const q = query(followsCollection, where("followingId", "==", userId));
@@ -74,21 +73,33 @@ export async function getFollowers(userId: string | undefined) {
       return [];
     }
 
-    const followerPromises = querySnapshot.docs.map((doc) => {
-      const followerId = doc.data().followerId;
-      return getUser(followerId);
+    const followerPromises = querySnapshot.docs.map(async (doc) => {
+      const followerId: string = doc.data().followerId;
+      return await getUser(followerId);
     });
     const followers = await Promise.all(followerPromises);
     return followers;
   } catch (e) {
     console.log(e);
+    return [];
   }
 }
 
-export async function getFollowings(userId: string | undefined) {
+export async function getFollowings(userId: string | undefined, sort: string) {
   try {
     const followsCollection = collection(db, "follows");
-    const q = query(followsCollection, where("followerId", "==", userId));
+    let q = query(followsCollection);
+
+    if (sort === "basics") {
+      q = query(followsCollection, where("followerId", "==", userId));
+    } else {
+      q = query(
+        followsCollection,
+        where("followerId", "==", userId),
+        orderBy("createdAt", sort as OrderByDirection | undefined)
+      );
+    }
+
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -104,5 +115,6 @@ export async function getFollowings(userId: string | undefined) {
     return followings;
   } catch (e) {
     console.log(e);
+    return [];
   }
 }

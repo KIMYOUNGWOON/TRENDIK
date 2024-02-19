@@ -8,7 +8,7 @@ import { getUsers } from "../../api/userApi";
 import Header from "../../components/Header";
 import UserListItem from "./components/UserListItem";
 import UserContext from "../../contexts/UserContext";
-import { userSearch } from "../../api/searchApi";
+import { searchingUsers } from "../../api/searchApi";
 import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
 
 function UserLookAround() {
@@ -22,7 +22,7 @@ function UserLookAround() {
   });
 
   const userSearchMutation = useDebouncedMutation(async (value: string) => {
-    const filteredUsers = await userSearch(value);
+    const filteredUsers = await searchingUsers(value);
     queryClient.setQueryData(["users", authUserId], filteredUsers);
   });
 
@@ -31,6 +31,8 @@ function UserLookAround() {
     setInputValue(value);
     userSearchMutation.mutate(value);
   }
+
+  const users = Array.isArray(data) ? data : [];
 
   return (
     <Container>
@@ -45,14 +47,14 @@ function UserLookAround() {
             onChange={handleChange}
           />
         </SearchBarBox>
-        {data?.length === 0 ? (
+        {users.length === 0 && !usersLoading ? (
           <UserSearchEmpty>
             <EmptyText>검색된 사용자가 없습니다.</EmptyText>
             <ReTryText>다른 닉네임으로 검색해주세요.</ReTryText>
           </UserSearchEmpty>
         ) : (
           <UserListBox>
-            {data?.map((user) => {
+            {users.map((user) => {
               return (
                 <UserListItem
                   key={user.userId}
@@ -114,7 +116,7 @@ const UserSearchEmpty = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding-top: 50%;
+  padding-top: 40%;
 `;
 
 const EmptyText = styled.div`

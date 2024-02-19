@@ -27,8 +27,8 @@ function FilterFeeds() {
       <Header title={`${decodeURIComponent(value)}`} />
       {data.length === 0 ? (
         <FeedSearchEmpty>
-          <EmptyText>필터링된 게시물이 없습니다.</EmptyText>
-          <ReTryText>다른 옵션으로 필터링해보세요.</ReTryText>
+          <EmptyText>해당 스타일에 게시물이 없습니다.</EmptyText>
+          <ReTryText>다른 스타일을 확인해보세요.</ReTryText>
         </FeedSearchEmpty>
       ) : (
         <FeedList>

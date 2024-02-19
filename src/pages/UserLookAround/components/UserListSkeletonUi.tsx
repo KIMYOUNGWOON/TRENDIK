@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-function SkeletonUi() {
+const UserListSkeletonUi = () => {
   return (
     <Container>
       <ProfileWrapper>
@@ -10,7 +10,7 @@ function SkeletonUi() {
       <Button />
     </Container>
   );
-}
+};
 
 const Container = styled.div`
   display: flex;
@@ -48,4 +48,4 @@ const Button = styled.div`
   background-color: rgba(1, 1, 1, 0.1);
 `;
 
-export default SkeletonUi;
+export default UserListSkeletonUi;

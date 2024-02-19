@@ -7,17 +7,18 @@ import { useNavigate } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { checkFollowStatus, toggleFollow } from "../../../api/connectApi";
 import { DocumentData } from "firebase/firestore";
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 import { useDebouncedMutation } from "../../../hooks/useDebouncedMutation";
-import UserListSkeletonUi from "./UserListSkeletonUi";
+import UserContext from "../../../contexts/UserContext";
+import FollowSkeletonUi from "./FollowSkeletonUi";
 
 interface Props {
   user: DocumentData;
   usersLoading: boolean;
-  authUserId: string;
 }
 
-const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
+const FollowUserListItem: React.FC<Props> = ({ user, usersLoading }) => {
+  const { authUserId } = useContext(UserContext);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const previousStatus = useRef<boolean>();
@@ -68,7 +69,7 @@ const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
   }
 
   if (followStatusLoading || usersLoading) {
-    return <UserListSkeletonUi />;
+    return <FollowSkeletonUi authUserId={authUserId} user={user} />;
   }
 
   return (
@@ -173,4 +174,4 @@ const UnFollowIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
 `;
 
-export default UserListItem;
+export default FollowUserListItem;

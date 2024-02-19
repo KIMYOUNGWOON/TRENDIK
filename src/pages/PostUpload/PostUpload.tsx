@@ -212,9 +212,8 @@ const PostUpload = () => {
             <UploadDescription>
               지금 보여주고 싶은 <br />
               스타일 영상을 공유하세요
+              <ToBeContinue>(추후 예정)</ToBeContinue>
             </UploadDescription>
-            <FileInputLabel htmlFor="videoUpload"></FileInputLabel>
-            <FileInput id="videoUpload" type="file" multiple />
           </UploadWrapper>
         </UploadBox>
         {previewUrlList.length > 0 && (
@@ -474,7 +473,12 @@ const UploadDescription = styled.div`
   color: rgba(1, 1, 1, 0.7);
   font-size: 14px;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.4;
+`;
+
+const ToBeContinue = styled.div`
+  margin-top: 10px;
+  font-weight: 700;
 `;
 
 const FileInputLabel = styled.label`

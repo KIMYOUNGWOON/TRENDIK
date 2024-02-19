@@ -19,7 +19,7 @@ function PickFeed() {
 
   return (
     <Container>
-      <Header title="위시리스트" />
+      <Header title="컬렉션" />
       <WishList>
         {data?.map((item) => {
           return (

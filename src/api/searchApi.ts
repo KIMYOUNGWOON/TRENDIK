@@ -12,8 +12,9 @@ import {
 } from "firebase/firestore";
 import { getUsers } from "./userApi";
 import { db } from "../firebase";
+import { getFollowers, getFollowings } from "./connectApi";
 
-export async function userSearch(keyword: string) {
+export async function searchingUsers(keyword: string) {
   try {
     console.log("search");
     const users = await getUsers();
@@ -39,7 +40,6 @@ export async function searchFeedsWithTag(tag: string) {
           hashTagObj.hashTag === tag
       )
     );
-    console.log(filteredFeeds);
     return filteredFeeds;
   } catch (error) {
     console.log(error);
@@ -80,6 +80,30 @@ export async function getPopularTag() {
       popularTags.push(doc.data());
     });
     return popularTags;
+  } catch (error) {
+    console.log(error);
+    return [];
+  }
+}
+
+export async function searchingFollowerFollowing(
+  action: string | undefined,
+  userId: string | undefined,
+  keyword: string
+) {
+  try {
+    const users =
+      action === "follower"
+        ? await getFollowers(userId)
+        : await getFollowings(userId, "sort");
+
+    const filteredUsers = users.filter((user) => {
+      if (user) {
+        return user.nickName.includes(keyword);
+      }
+    });
+    console.log(filteredUsers);
+    return filteredUsers;
   } catch (error) {
     console.log(error);
     return [];

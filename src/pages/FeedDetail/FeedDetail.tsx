@@ -58,7 +58,7 @@ function FeedDetail() {
     enabled: !!postId,
   });
 
-  const myFeed = authUserId === feedData?.userInfo.userId;
+  const myFeed = authUserId === feedData?.userId;
 
   const { data: likeStatus } = useQuery({
     queryKey: ["likeStatus", `${authUserId}-${postId}`],
@@ -317,6 +317,7 @@ function FeedDetail() {
           />
           <CommentModal
             authUserId={authUserId}
+            feedUserId={feedData?.userId}
             postId={postId}
             commentModal={commentModal}
             setCommentModal={setCommentModal}

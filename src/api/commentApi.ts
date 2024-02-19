@@ -91,6 +91,7 @@ export async function postComment(
         likeCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
+        fresh: false,
       };
 
       const collectionRef = collection(db, "comments");
@@ -115,7 +116,7 @@ export async function editComment(
   try {
     if (commentId) {
       const docRef = doc(db, "comments", commentId);
-      await updateDoc(docRef, { comment });
+      await updateDoc(docRef, { comment, updatedAt: new Date() });
     }
   } catch (error) {
     console.log(error);

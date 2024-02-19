@@ -18,7 +18,8 @@ interface Props {
   gifModal: boolean;
   toggleGIfModal: () => void;
   postId: string | undefined;
-  authUser: DocumentData | undefined;
+  authUser: DocumentData | undefined | null;
+  scrollToTop: () => void;
 }
 
 const GifSearchModal: React.FC<Props> = ({
@@ -26,6 +27,7 @@ const GifSearchModal: React.FC<Props> = ({
   toggleGIfModal,
   postId,
   authUser,
+  scrollToTop,
 }) => {
   const [inputValue, setInputValue] = useState("");
   const { authUserId } = useContext(UserContext);
@@ -56,6 +58,7 @@ const GifSearchModal: React.FC<Props> = ({
         likeCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
+        fresh: true,
       };
 
       queryClient.setQueryData(
@@ -79,6 +82,7 @@ const GifSearchModal: React.FC<Props> = ({
         }
       );
 
+      scrollToTop();
       toggleGIfModal();
 
       return { previousComments };
@@ -109,32 +113,36 @@ const GifSearchModal: React.FC<Props> = ({
 
   return (
     <Container $isOpened={gifModal}>
-      <CloseBar
-        onClick={() => {
-          toggleGIfModal();
-          setInputValue("");
-        }}
-      />
-      <SearchBarBox>
-        <SearchIcon icon={faMagnifyingGlass} />
-        <SearchInput
-          type="text"
-          placeholder="GIPHY 검색"
-          value={inputValue}
-          onChange={handleChange}
+      <Header>
+        <CloseBar
+          onClick={() => {
+            toggleGIfModal();
+            setInputValue("");
+          }}
         />
-      </SearchBarBox>
-      <Grid
-        width={485}
-        columns={3}
-        fetchGifs={(offset) =>
-          inputValue
-            ? gf.search(inputValue, { offset, limit: 10 })
-            : gf.trending({ offset, limit: 10 })
-        }
-        key={inputValue}
-        onGifClick={onGifClick}
-      />
+        <SearchBarBox>
+          <SearchIcon icon={faMagnifyingGlass} />
+          <SearchInput
+            type="text"
+            placeholder="GIPHY 검색"
+            value={inputValue}
+            onChange={handleChange}
+          />
+        </SearchBarBox>
+      </Header>
+      <GifListBox>
+        <Grid
+          width={485}
+          columns={3}
+          fetchGifs={(offset) =>
+            inputValue
+              ? gf.search(inputValue, { offset, limit: 10 })
+              : gf.trending({ offset, limit: 10 })
+          }
+          key={inputValue}
+          onGifClick={onGifClick}
+        />
+      </GifListBox>
     </Container>
   );
 };
@@ -142,13 +150,20 @@ const GifSearchModal: React.FC<Props> = ({
 const Container = styled.div<{ $isOpened: boolean }>`
   position: fixed;
   height: 100%;
-  bottom: 0px;
-  padding-top: 18px;
+  bottom: 0;
   background-color: #414141;
   z-index: 1;
   overflow-y: scroll;
   transform: translateY(${({ $isOpened }) => ($isOpened ? "0" : "100%")});
   transition: 0.3s;
+`;
+
+const Header = styled.div`
+  position: sticky;
+  top: 0;
+  padding: 18px 0;
+  background-color: #414141;
+  z-index: 1;
 `;
 
 const CloseBar = styled.div`
@@ -190,6 +205,10 @@ const SearchInput = styled.input`
   &::placeholder {
     color: #c7c7c7;
   }
+`;
+
+const GifListBox = styled.div`
+  padding-bottom: 40px;
 `;
 
 export default GifSearchModal;

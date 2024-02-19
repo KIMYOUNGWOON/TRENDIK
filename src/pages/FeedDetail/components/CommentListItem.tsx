@@ -1,6 +1,7 @@
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 import styled from "styled-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleUser } from "@fortawesome/free-solid-svg-icons";
 import { faHeart } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faSolidHeart } from "@fortawesome/free-solid-svg-icons";
 import { faArrowTurnUp } from "@fortawesome/free-solid-svg-icons";
@@ -16,15 +17,31 @@ import { deleteComment, editComment } from "../../../api/commentApi";
 import { getLikeStatus, toggleLikeFeed } from "../../../api/likeApi";
 import { ChangeEvent, FormEvent, useEffect, useRef, useState } from "react";
 import { useDebouncedMutation } from "../../../hooks/useDebouncedMutation";
+import { getReplies } from "../../../api/replyApi";
+import ReplyListItem from "./ReplyListItem";
 
 interface Props {
   authUserId: string;
+  feedUserId: string | undefined;
   postId: string | undefined;
   comment: DocumentData;
+  commentModal: boolean;
+  replyVisible: boolean;
+  changeReplyMode: (postId: string, nickName: string) => void;
+  toggleReplyVisible: () => void;
 }
 
-const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
-  const [isClicked, setIsClicked] = useState(false);
+const CommentListItem: React.FC<Props> = ({
+  authUserId,
+  feedUserId,
+  postId,
+  comment,
+  commentModal,
+  replyVisible,
+  changeReplyMode,
+  toggleReplyVisible,
+}) => {
+  const [slideOpen, setSlideOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const queryClient = useQueryClient();
@@ -32,11 +49,22 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
   const previousCommentsStatus = useRef<DocumentData | undefined>();
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
+  const { data } = useQuery({
+    queryKey: ["replies", comment.id],
+    queryFn: () => getReplies(comment.id),
+  });
+
+  const replies = Array.isArray(data) ? data : [];
+
   useEffect(() => {
-    if (!isClicked && !editMode) {
+    if (!slideOpen && !editMode) {
       setInputValue(comment.comment);
     }
-  }, [isClicked, editMode, comment.comment]);
+  }, [slideOpen, editMode, comment.comment]);
+
+  useEffect(() => {
+    setSlideOpen(false);
+  }, [commentModal]);
 
   useEffect(() => {
     if (textAreaRef.current) {
@@ -241,94 +269,133 @@ const CommentListItem: React.FC<Props> = ({ authUserId, postId, comment }) => {
   }
 
   return (
-    <Container>
-      <CommentWrapper
-        $isClicked={isClicked}
-        $isChecked={comment.type === "gif"}
-      >
-        <FlexStartWrapper
-          onClick={() => {
-            setIsClicked(false);
-          }}
+    <>
+      <Container>
+        <CommentWrapper
+          $isFresh={comment.fresh}
+          $isClicked={slideOpen}
+          $isChecked={comment.type === "gif" || comment.userId !== authUserId}
         >
-          <ProfileImage $profileImage={comment.userInfo.profileImage} />
-          <ProfileIcon />
-          <Wrapper>
-            <NickName>{comment.userInfo.nickName}</NickName>
-            {editMode ? (
-              <EditForm onSubmit={handleSubmit}>
-                <EditTextArea
-                  ref={textAreaRef}
-                  value={inputValue}
-                  onChange={handleChange}
-                />
-                <EditBtn>
-                  <EditButtonIcon icon={faArrowUpLong} />
-                </EditBtn>
-                <EditCancelButton
-                  onClick={() => {
-                    setEditMode(false);
-                  }}
-                >
-                  수정 취소
-                </EditCancelButton>
-              </EditForm>
-            ) : comment.type === "comment" ? (
-              <Comment>{comment.comment}</Comment>
-            ) : (
-              <GIf src={comment.gif} />
-            )}
-            <BtnWrapper>
-              <ReplyWrapper>
-                <ReplyIcon icon={faArrowTurnUp} rotation={90} />
-                <ReplyText>답글 달기</ReplyText>
-              </ReplyWrapper>
-              <LikeWrapper>
-                {likeStatus ? (
-                  <SolidHeartIcon
-                    icon={faSolidHeart}
-                    onClick={handleToggleLikeFeed}
-                  />
-                ) : (
-                  <HeartIcon icon={faHeart} onClick={handleToggleLikeFeed} />
-                )}
-                {comment.likeCount !== 0 && (
-                  <LikeCount>{comment.likeCount}</LikeCount>
-                )}
-              </LikeWrapper>
-            </BtnWrapper>
-          </Wrapper>
-        </FlexStartWrapper>
-        <EllipsisIcon
-          icon={faEllipsisVertical}
-          onClick={() => {
-            setIsClicked((prev) => !prev);
-          }}
-        />
-      </CommentWrapper>
-      <CommentSetUpBox $isChecked={comment.type === "gif"}>
-        {comment.type === "comment" && (
-          <EditComment
+          <FlexStartWrapper
             onClick={() => {
-              setEditMode((prev) => !prev);
-              setIsClicked((prev) => !prev);
+              setSlideOpen(false);
             }}
           >
-            수정
-          </EditComment>
-        )}
-        <DeleteComment
-          onClick={() => {
-            const check = confirm("정말 삭제하시겠습니까?");
-            if (check) {
-              handleRemove();
-            }
-          }}
+            {comment.userInfo.profileImage ? (
+              <ProfileImage $profileImage={comment.userInfo.profileImage} />
+            ) : (
+              <ProfileIcon icon={faCircleUser} />
+            )}
+            <Wrapper>
+              <NickName>{comment.userInfo.nickName}</NickName>
+              {editMode ? (
+                <EditForm onSubmit={handleSubmit}>
+                  <EditTextArea
+                    ref={textAreaRef}
+                    value={inputValue}
+                    onChange={handleChange}
+                  />
+                  <EditBtn>
+                    <EditButtonIcon icon={faArrowUpLong} />
+                  </EditBtn>
+                  <EditCancelButton
+                    onClick={() => {
+                      setEditMode(false);
+                    }}
+                  >
+                    수정 취소
+                  </EditCancelButton>
+                </EditForm>
+              ) : comment.type === "comment" ? (
+                <Comment>{comment.comment}</Comment>
+              ) : (
+                <GIf src={comment.gif} />
+              )}
+              <BtnWrapper>
+                <ReplyWrapper>
+                  <ReplyIcon icon={faArrowTurnUp} rotation={90} />
+                  <ReplyText
+                    onClick={() => {
+                      changeReplyMode(comment.id, comment.userInfo.nickName);
+                    }}
+                  >
+                    답글 달기
+                  </ReplyText>
+                </ReplyWrapper>
+                <LikeWrapper>
+                  {likeStatus ? (
+                    <SolidHeartIcon
+                      icon={faSolidHeart}
+                      onClick={handleToggleLikeFeed}
+                    />
+                  ) : (
+                    <HeartIcon icon={faHeart} onClick={handleToggleLikeFeed} />
+                  )}
+                  {comment.likeCount !== 0 && (
+                    <LikeCount>{comment.likeCount}</LikeCount>
+                  )}
+                </LikeWrapper>
+              </BtnWrapper>
+            </Wrapper>
+          </FlexStartWrapper>
+          {(comment.userId === authUserId || feedUserId === authUserId) && (
+            <EllipsisIcon
+              icon={faEllipsisVertical}
+              onClick={() => {
+                setSlideOpen((prev) => !prev);
+              }}
+            />
+          )}
+        </CommentWrapper>
+        <CommentSetUpBox
+          $isChecked={comment.type === "gif" || comment.userId !== authUserId}
         >
-          삭제
-        </DeleteComment>
-      </CommentSetUpBox>
-    </Container>
+          {comment.type === "comment" && comment.userId === authUserId && (
+            <EditComment
+              onClick={() => {
+                setEditMode((prev) => !prev);
+                setSlideOpen((prev) => !prev);
+              }}
+            >
+              수정
+            </EditComment>
+          )}
+          <DeleteComment
+            onClick={() => {
+              const check = confirm("정말 삭제하시겠습니까?");
+              if (check) {
+                handleRemove();
+              }
+            }}
+          >
+            삭제
+          </DeleteComment>
+        </CommentSetUpBox>
+      </Container>
+      <ReplyList>
+        {replyVisible ? (
+          replies.map((reply) => (
+            <ReplyListItem
+              key={reply.id}
+              reply={reply}
+              authUserId={authUserId}
+              feedUserId={feedUserId}
+              commentId={comment.id}
+              commentModal={commentModal}
+            />
+          ))
+        ) : (
+          <VisibleBtn onClick={toggleReplyVisible}>
+            <BarElement /> 답글 {replies.length}개 보기
+          </VisibleBtn>
+        )}
+        {replies.length > 0 && replyVisible && (
+          <HiddenBtn onClick={toggleReplyVisible}>
+            <BarElement /> 답글 숨기기
+          </HiddenBtn>
+        )}
+      </ReplyList>
+    </>
   );
 };
 
@@ -336,13 +403,17 @@ const Container = styled.div`
   position: relative;
 `;
 
-const CommentWrapper = styled.div<{ $isClicked: boolean; $isChecked: boolean }>`
+const CommentWrapper = styled.div<{
+  $isFresh: boolean;
+  $isClicked: boolean;
+  $isChecked: boolean;
+}>`
   position: relative;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 14px;
-  background-color: #fff;
+  background-color: ${({ $isFresh }) => ($isFresh ? "#fffddd" : "#fff")};
   transform: ${({ $isClicked, $isChecked }) =>
     $isClicked
       ? `translateX(${$isChecked ? "-80px" : "-160px"})`
@@ -354,7 +425,7 @@ const CommentWrapper = styled.div<{ $isClicked: boolean; $isChecked: boolean }>`
 const FlexStartWrapper = styled.div`
   flex: 1;
   display: flex;
-  gap: 6px;
+  gap: 10px;
 `;
 
 const ProfileImage = styled.div<{ $profileImage: string }>`
@@ -366,7 +437,10 @@ const ProfileImage = styled.div<{ $profileImage: string }>`
   background-size: cover;
 `;
 
-const ProfileIcon = styled.div``;
+const ProfileIcon = styled(FontAwesomeIcon)`
+  font-size: 38px;
+  color: rgba(1, 1, 1, 0.1);
+`;
 
 const Wrapper = styled.div`
   flex-basis: 380px;
@@ -544,6 +618,32 @@ const EditCancelButton = styled.div`
     cursor: pointer;
     color: #f50100;
   }
+`;
+
+const ReplyList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const VisibleBtn = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-left: 62px;
+  color: rgba(1, 1, 1, 0.6);
+  font-size: 12px;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const HiddenBtn = styled(VisibleBtn)``;
+
+const BarElement = styled.div`
+  width: 24px;
+  height: 1px;
+  background-color: rgba(1, 1, 1, 0.1);
 `;
 
 export default CommentListItem;

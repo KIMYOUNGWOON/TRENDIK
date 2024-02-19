@@ -26,16 +26,24 @@ import CommentListItem from "./CommentListItem";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 import { useInView } from "react-intersection-observer";
 import GifSearchModal from "./GifSearchModal";
+import { postingReply } from "../../../api/replyApi";
 
 interface Props {
   authUserId: string;
+  feedUserId: string | undefined;
   postId: string | undefined;
   commentModal: boolean;
   setCommentModal: Dispatch<SetStateAction<boolean>>;
 }
 
+const initialValue = {
+  id: "",
+  nickName: "",
+};
+
 const CommentModal: React.FC<Props> = ({
   authUserId,
+  feedUserId,
   postId,
   commentModal,
   setCommentModal,
@@ -43,8 +51,11 @@ const CommentModal: React.FC<Props> = ({
   const [inputValue, setInputValue] = useState("");
   const [initialLoading, setInitialLoading] = useState(true);
   const [gifModal, setGifModal] = useState(false);
+  const [replyMode, setReplyMode] = useState(false);
+  const [replyVisible, setReplyVisible] = useState(false);
+  const [commentInfo, setCommentInfo] = useState(initialValue);
   const queryClient = useQueryClient();
-  const rootRef = useRef(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const { ref, inView } = useInView({
     rootMargin: " 0px 0px -138px 0px",
     root: rootRef.current,
@@ -64,7 +75,7 @@ const CommentModal: React.FC<Props> = ({
     isFetchingNextPage,
   } = useInfiniteQuery({
     queryKey: ["comments", postId],
-    queryFn: ({ pageParam }) => getComments(postId, 20, pageParam),
+    queryFn: ({ pageParam }) => getComments(postId, 16, pageParam),
     initialPageParam: null,
     getNextPageParam: (lastPage: {
       comments: DocumentData[];
@@ -95,6 +106,12 @@ const CommentModal: React.FC<Props> = ({
     setInputValue(value);
   }
 
+  const scrollToTop = () => {
+    if (rootRef.current) {
+      rootRef.current.scrollTop = 0;
+    }
+  };
+
   const postCommentMutation = useMutation({
     mutationFn: (comment: string) => postComment("comment", comment, postId),
     onMutate: (comment: string) => {
@@ -113,6 +130,7 @@ const CommentModal: React.FC<Props> = ({
         likeCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
+        fresh: true,
       };
 
       queryClient.setQueryData(
@@ -136,6 +154,7 @@ const CommentModal: React.FC<Props> = ({
         }
       );
 
+      scrollToTop();
       setInputValue("");
 
       return { previousComments };
@@ -155,14 +174,82 @@ const CommentModal: React.FC<Props> = ({
     },
   });
 
+  const postReplyMutation = useMutation({
+    mutationFn: (reply: string) => postingReply(commentInfo.id, reply),
+    onMutate: (reply: string) => {
+      queryClient.cancelQueries({
+        queryKey: ["replies", commentInfo.id],
+      });
+
+      const previousReplies = queryClient.getQueryData([
+        "replies",
+        commentInfo.id,
+      ]);
+
+      const previousValue = Array.isArray(previousReplies)
+        ? previousReplies
+        : [];
+
+      const newReply = {
+        id: previousValue.length + 1,
+        userInfo: authUser,
+        commentId: commentInfo.id,
+        reply,
+        fresh: true,
+      };
+
+      queryClient.setQueryData(
+        ["replies", commentInfo.id],
+        [newReply, ...previousValue]
+      );
+
+      setReplyVisible(true);
+      setReplyMode(false);
+      setInputValue("");
+
+      return { previousValue };
+    },
+    onError: (error, variables, context) => {
+      if (context) {
+        alert("정상적으로 업로드되지 않았습니다.");
+        queryClient.setQueryData(
+          ["replies", commentInfo.id],
+          context.previousValue
+        );
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["replies", commentInfo.id] });
+    },
+  });
+
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const temp = inputValue;
-    postCommentMutation.mutate(temp);
+
+    if (replyMode) {
+      postReplyMutation.mutate(temp);
+    } else {
+      postCommentMutation.mutate(temp);
+    }
   }
 
   function toggleGIfModal() {
     setGifModal((prev) => !prev);
+  }
+
+  function changeReplyMode(id: string, nickName: string) {
+    const commentInfo = {
+      id,
+      nickName,
+    };
+    textAreaRef.current?.focus();
+    setReplyMode(true);
+    setCommentInfo(commentInfo);
+  }
+
+  function toggleReplyVisible() {
+    setReplyVisible((prev) => !prev);
   }
 
   return (
@@ -173,6 +260,7 @@ const CommentModal: React.FC<Props> = ({
           icon={faArrowDownLong}
           onClick={() => {
             setCommentModal(false);
+            setReplyVisible(false);
           }}
         />
       </Header>
@@ -192,8 +280,13 @@ const CommentModal: React.FC<Props> = ({
                       <CommentListItem
                         key={comment.id}
                         authUserId={authUserId}
+                        feedUserId={feedUserId}
                         comment={comment}
                         postId={postId}
+                        commentModal={commentModal}
+                        changeReplyMode={changeReplyMode}
+                        replyVisible={replyVisible}
+                        toggleReplyVisible={toggleReplyVisible}
                       />
                     );
                   })}
@@ -207,29 +300,47 @@ const CommentModal: React.FC<Props> = ({
             <SpinnerIcon icon={faSpinner} spinPulse />
           </LoadingWrapper>
         )}
-        {!initialLoading && comments?.pages[0].comments.length === 10 && (
+        {!initialLoading && comments?.pages[0].comments.length === 16 && (
           <Observer ref={ref}></Observer>
         )}
         <CommentForm onSubmit={handleSubmit}>
-          {authUser?.profileImage ? (
-            <ProfileImage $profileImage={authUser.profileImage} />
-          ) : (
-            <ProfileIcon icon={faCircleUser} />
+          {replyMode && (
+            <ReplyModeWrapper>
+              <ReplyToNickName>
+                @{commentInfo.nickName}{" "}
+                <ReplyOngoing>님에게 답글 다는 중...</ReplyOngoing>
+              </ReplyToNickName>
+              <CancelBtn
+                onClick={() => {
+                  setReplyMode(false);
+                  setInputValue("");
+                }}
+              >
+                ✕
+              </CancelBtn>
+            </ReplyModeWrapper>
           )}
-          <CommentTextArea
-            name="comment"
-            placeholder="댓글 달기..."
-            onChange={handleChange}
-            value={inputValue}
-            ref={textAreaRef}
-          />
-          {inputValue ? (
-            <CommentButton>
-              <CommentButtonIcon icon={faArrowUpLong} />
-            </CommentButton>
-          ) : (
-            <GifButton onClick={toggleGIfModal}>GIF</GifButton>
-          )}
+          <Wrapper>
+            {authUser?.profileImage ? (
+              <ProfileImage $profileImage={authUser.profileImage} />
+            ) : (
+              <ProfileIcon icon={faCircleUser} />
+            )}
+            <CommentTextArea
+              name="comment"
+              placeholder="댓글 달기..."
+              onChange={handleChange}
+              value={inputValue}
+              ref={textAreaRef}
+            />
+            {inputValue || replyMode ? (
+              <CommentButton>
+                <CommentButtonIcon icon={faArrowUpLong} />
+              </CommentButton>
+            ) : (
+              <GifButton onClick={toggleGIfModal}>GIF</GifButton>
+            )}
+          </Wrapper>
         </CommentForm>
       </ContentBox>
       <GifSearchModal
@@ -237,6 +348,7 @@ const CommentModal: React.FC<Props> = ({
         toggleGIfModal={toggleGIfModal}
         postId={postId}
         authUser={authUser}
+        scrollToTop={scrollToTop}
       />
     </Container>
   );
@@ -290,9 +402,6 @@ const CommentList = styled.div``;
 const PageWrapper = styled.div``;
 
 const CommentForm = styled.form`
-  display: flex;
-  align-items: center;
-  gap: 20px;
   position: fixed;
   left: 0;
   right: 0;
@@ -303,9 +412,45 @@ const CommentForm = styled.form`
   z-index: 1;
 `;
 
+const ReplyModeWrapper = styled.div`
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding-left: 66px;
+  padding-right: 10px;
+`;
+
+const ReplyToNickName = styled.div`
+  color: rgba(1, 1, 1, 0.9);
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+const ReplyOngoing = styled.span`
+  color: rgba(1, 1, 1, 0.4);
+  font-size: 12px;
+  font-weight: 600;
+`;
+
+const CancelBtn = styled.div`
+  color: rgba(1, 1, 1, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const Wrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+`;
+
 const CommentTextArea = styled.textarea`
   flex: 1;
-  padding: 10px 56px 10px 14px;
+  padding: 10px 56px 12px 14px;
   border: 1px solid rgba(1, 1, 1, 0.2);
   border-radius: 8px;
   color: rgba(1, 1, 1, 0.8);
@@ -313,17 +458,19 @@ const CommentTextArea = styled.textarea`
   resize: none;
   transition: 0.3s;
   overflow-y: hidden;
-
   &::placeholder {
     color: rgba(1, 1, 1, 0.3);
-    font-size: 14px;
+    font-size: 12px;
+  }
+  &:focus {
+    border: 1px solid rgba(1, 1, 1, 1);
   }
 `;
 
 const CommentButton = styled.button`
   display: block;
   position: absolute;
-  right: 30px;
+  right: 10px;
   height: 26px;
   width: 38px;
   border: none;
@@ -346,7 +493,7 @@ const GifButton = styled.div`
   justify-content: center;
   align-items: center;
   position: absolute;
-  right: 30px;
+  right: 10px;
   width: 38px;
   height: 26px;
   border: 2px solid #222;

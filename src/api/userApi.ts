@@ -109,9 +109,12 @@ export async function getUser(userId: string) {
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
     const data = docSnap.data();
-    return data;
+    if (data) {
+      return data;
+    }
   } catch (e) {
     console.log(e);
+    return null;
   }
 }
 

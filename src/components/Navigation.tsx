@@ -74,7 +74,7 @@ const Container = styled.nav`
   bottom: 0;
   left: 50%;
   width: 500px;
-  height: 70px;
+  height: 71px;
   padding: 0 30px;
   background-color: #fff;
   transform: translateX(-50%);

@@ -5,20 +5,31 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ChangeEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getFollowers, getFollowings } from "../../api/connectApi";
-import UserListItem from "../UserLookAround/components/UserListItem";
 import { getUser } from "../../api/userApi";
+import FollowUserListItem from "./components/FollowUserListItem";
+import { useDebouncedMutation } from "../../hooks/useDebouncedMutation";
+import { searchingFollowerFollowing } from "../../api/searchApi";
+import SortChangeModal from "./components/SortChangeModal";
+
+interface sortPareType {
+  [key: string]: string;
+}
+
+const sortPare: sortPareType = {
+  basics: "기본",
+  asc: "팔로우한 날짜: 오래된순",
+  desc: "팔로우한 날짜: 최신순",
+};
 
 function FollowerFollowing() {
   const { userId, select } = useParams();
   const [inputValue, setInputValue] = useState("");
+  const [sort, setSort] = useState("basics");
+  const [sortChangeModal, setSortChangeModal] = useState(false);
   const navigate = useNavigate();
-
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
-    const { value } = e.target;
-    setInputValue(value);
-  }
+  const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ["users", userId],
@@ -30,14 +41,44 @@ function FollowerFollowing() {
     enabled: !!userId,
   });
 
-  const queryFn = select === "follower" ? getFollowers : getFollowings;
+  const queryKey =
+    select === "follower" ? [select, userId] : [select, userId, sort];
 
-  const { data } = useQuery({
-    queryKey: [select, userId],
-    queryFn: async () => await queryFn(userId),
+  const { data: users, isLoading: usersLoading } = useQuery({
+    queryKey,
+    queryFn: async () => {
+      if (select === "following") {
+        return await getFollowings(userId, sort);
+      } else {
+        return await getFollowers(userId);
+      }
+    },
   });
 
-  const userList = Array.isArray(data) ? data : [];
+  const userSearchMutation = useDebouncedMutation(async (value: string) => {
+    const filteredUsers = await searchingFollowerFollowing(
+      select,
+      userId,
+      value
+    );
+    queryClient.setQueryData([select, userId], filteredUsers);
+  });
+
+  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value } = e.target;
+    userSearchMutation.mutate(value);
+    setInputValue(value);
+  }
+
+  function handleSortChange(e: ChangeEvent<HTMLInputElement>) {
+    const { value } = e.target;
+    setSort(value);
+    toggleSortChangeModal();
+  }
+
+  function toggleSortChangeModal() {
+    setSortChangeModal((prev) => !prev);
+  }
 
   return (
     <Container>
@@ -47,7 +88,7 @@ function FollowerFollowing() {
           <SearchIcon icon={faMagnifyingGlass} />
           <SearchInput
             type="text"
-            placeholder="검색"
+            placeholder="닉네임 검색"
             value={inputValue}
             onChange={handleChange}
           />
@@ -70,17 +111,50 @@ function FollowerFollowing() {
             팔로잉
           </FollowingBtn>
         </SelectBox>
-        <UserListBox>
-          {userList.map((user) => {
-            return user ? <UserListItem key={user.userId} user={user} /> : null;
-          })}
-        </UserListBox>
+        {select === "following" && users?.length !== 0 && (
+          <SortBox>
+            <SortMarkKey>
+              정렬 기준 : <SortMarkValue>{sortPare[sort]}</SortMarkValue>
+            </SortMarkKey>
+            <SortChangeBtn onClick={toggleSortChangeModal}>↓↑</SortChangeBtn>
+          </SortBox>
+        )}
+        {users?.length === 0 ? (
+          <EmptyBox>
+            <EmptyText>
+              {select === "follower" ? "나를 " : "내가"} 팔로우한 사용자가
+              없습니다.
+            </EmptyText>
+          </EmptyBox>
+        ) : (
+          <UserListBox>
+            {users?.map((user) => {
+              if (user) {
+                return (
+                  <FollowUserListItem
+                    key={user.userId}
+                    user={user}
+                    usersLoading={usersLoading}
+                  />
+                );
+              }
+            })}
+          </UserListBox>
+        )}
       </ContentBox>
+      {sortChangeModal && <BackGround onClick={toggleSortChangeModal} />}
+      <SortChangeModal
+        sort={sort}
+        sortChangeModal={sortChangeModal}
+        handleSortChange={handleSortChange}
+        toggleSortChangeModal={toggleSortChangeModal}
+      />
     </Container>
   );
 }
 
 const Container = styled.div`
+  position: relative;
   animation: ${componentMount} 0.15s linear;
 `;
 
@@ -97,9 +171,8 @@ const SearchBarBox = styled.div`
 
 const SearchIcon = styled(FontAwesomeIcon)`
   position: absolute;
-  top: 10px;
+  top: 12px;
   left: 50px;
-  font-size: 18px;
   color: rgba(1, 1, 1, 0.4);
 `;
 
@@ -111,7 +184,7 @@ const SearchInput = styled.input`
   border: none;
   background-color: rgba(1, 1, 1, 0.1);
   color: rgba(1, 1, 1, 0.6);
-  font-size: 16px;
+  font-size: 14px;
   outline: none;
 
   &::placeholder {
@@ -123,6 +196,7 @@ const SelectBox = styled.div`
   display: flex;
   justify-content: center;
   border-bottom: 1px solid rgba(1, 1, 1, 0.2);
+  margin-bottom: 20px;
 `;
 
 const FollowerBtn = styled.div<{ $selected: string | undefined }>`
@@ -148,6 +222,46 @@ const FollowingBtn = styled(FollowerBtn)`
 
 const UserListBox = styled.div`
   padding: 30px;
+`;
+
+const SortBox = styled.div`
+  display: flex;
+  justify-content: space-between;
+  padding: 0 30px;
+`;
+
+const SortMarkKey = styled.div`
+  color: rgba(1, 1, 1, 0.5);
+`;
+
+const SortMarkValue = styled.span`
+  color: rgba(1, 1, 1, 0.9);
+  font-weight: 600;
+`;
+
+const SortChangeBtn = styled.div`
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -6px;
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const BackGround = styled.div`
+  position: absolute;
+  inset: 0;
+  background-color: rgba(1, 1, 1, 0.4);
+`;
+
+const EmptyBox = styled.div`
+  padding-top: 30%;
+`;
+
+const EmptyText = styled.div`
+  font-size: 18px;
+  font-weight: 500;
+  text-align: center;
 `;
 
 export default FollowerFollowing;

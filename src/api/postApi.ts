@@ -148,7 +148,6 @@ export async function getFeed(postId: string | undefined) {
       const feed = docSnap.data();
       const feedData = { ...feed };
       feedData.userInfo = await getUser(feed?.userId);
-
       return feedData;
     }
   } catch (error) {
