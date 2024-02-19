@@ -55,7 +55,7 @@ function UserHome() {
 
   const { data: followings, isLoading: followingLoading } = useQuery({
     queryKey: ["followings", userId],
-    queryFn: async () => await getFollowings(userId),
+    queryFn: async () => await getFollowings(userId, "basics"),
     enabled: !!userId,
   });
 
@@ -82,6 +82,7 @@ function UserHome() {
           previousStatus: boolean;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         if (context) {
           queryClient.setQueryData(
             ["followStatus", userId],

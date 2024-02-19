@@ -97,6 +97,7 @@ function FeedDetail() {
           previousFeedStatus: DocumentData;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         if (context) {
           queryClient.setQueryData(
             ["likeStatus", `${authUserId}-${postId}`],
@@ -160,6 +161,7 @@ function FeedDetail() {
           previousPickStatus: boolean;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         queryClient.setQueryData(
           ["likeStatus", `${authUserId}-${postId}`],
           context?.previousPickStatus

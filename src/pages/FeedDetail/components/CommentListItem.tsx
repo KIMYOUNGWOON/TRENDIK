@@ -100,6 +100,7 @@ const CommentListItem: React.FC<Props> = ({
           previousCommentsStatus: DocumentData;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         if (context) {
           queryClient.setQueryData(
             ["likeStatus", `${authUserId}-${comment.id}`],
@@ -154,6 +155,7 @@ const CommentListItem: React.FC<Props> = ({
       return { previousComments };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         queryClient.setQueryData(
           ["comments", postId],
@@ -195,6 +197,7 @@ const CommentListItem: React.FC<Props> = ({
       return { previousComments };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         queryClient.setQueryData(
           ["comments", postId],
@@ -373,22 +376,22 @@ const CommentListItem: React.FC<Props> = ({
         </CommentSetUpBox>
       </Container>
       <ReplyList>
-        {replyVisible ? (
-          replies.map((reply) => (
-            <ReplyListItem
-              key={reply.id}
-              reply={reply}
-              authUserId={authUserId}
-              feedUserId={feedUserId}
-              commentId={comment.id}
-              commentModal={commentModal}
-            />
-          ))
-        ) : (
-          <VisibleBtn onClick={toggleReplyVisible}>
-            <BarElement /> 답글 {replies.length}개 보기
-          </VisibleBtn>
-        )}
+        {replyVisible
+          ? replies.map((reply) => (
+              <ReplyListItem
+                key={reply.id}
+                reply={reply}
+                authUserId={authUserId}
+                feedUserId={feedUserId}
+                commentId={comment.id}
+                commentModal={commentModal}
+              />
+            ))
+          : replies.length > 0 && (
+              <VisibleBtn onClick={toggleReplyVisible}>
+                <BarElement /> 답글 {replies.length}개 보기
+              </VisibleBtn>
+            )}
         {replies.length > 0 && replyVisible && (
           <HiddenBtn onClick={toggleReplyVisible}>
             <BarElement /> 답글 숨기기

@@ -44,6 +44,7 @@ const UserListItem: React.FC<Props> = ({ user, usersLoading, authUserId }) => {
           previousStatus: boolean;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         if (context) {
           queryClient.setQueryData(
             ["followStatus", user.userId],

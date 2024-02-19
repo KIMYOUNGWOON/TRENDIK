@@ -77,6 +77,7 @@ const FeedListItem: React.FC<Props> = ({
           }>;
         }
       ) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
         if (context) {
           queryClient.setQueryData(
             ["likeStatus", `${authUserId}-${feed.id}`],

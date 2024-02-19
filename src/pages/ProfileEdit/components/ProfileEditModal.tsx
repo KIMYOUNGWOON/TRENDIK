@@ -90,6 +90,7 @@ const ProfileEditModal: React.FC<Props> = ({
       return { previousValue };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         queryClient.setQueryData(
           ["authUser", authUser.userId],

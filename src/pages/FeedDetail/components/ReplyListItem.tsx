@@ -71,6 +71,7 @@ const ReplyListItem: React.FC<Props> = ({
       return { previousvalue };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         queryClient.setQueryData(["replies", commentId], context.previousvalue);
       }
@@ -105,6 +106,7 @@ const ReplyListItem: React.FC<Props> = ({
       return { previousValue };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         queryClient.setQueryData(["replies", commentId], context.previousValue);
       }

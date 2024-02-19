@@ -55,6 +55,7 @@ const FeedSetUpModal: React.FC<Props> = ({
       return { previousValue };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       queryClient.setQueryData(["feed", postId], context?.previousValue);
     },
     onSuccess: () => {

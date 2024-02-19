@@ -160,6 +160,7 @@ const CommentModal: React.FC<Props> = ({
       return { previousComments };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         alert("정상적으로 업로드되지 않았습니다.");
         queryClient.setQueryData(
@@ -210,6 +211,7 @@ const CommentModal: React.FC<Props> = ({
       return { previousValue };
     },
     onError: (error, variables, context) => {
+      console.error(`An error occurred while ${variables}: ${error.message}`);
       if (context) {
         alert("정상적으로 업로드되지 않았습니다.");
         queryClient.setQueryData(
