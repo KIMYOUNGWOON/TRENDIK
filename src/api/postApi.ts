@@ -74,7 +74,6 @@ export async function getAllFeeds(
   lastDoc: DocumentSnapshot | null = null,
   sort: string = "createdAt"
 ) {
-  console.log(sort);
   try {
     const collectionRef = collection(db, "feeds");
     let q = query(collectionRef, orderBy(sort, "desc"), limit(pageSize));
