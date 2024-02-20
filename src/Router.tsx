@@ -8,7 +8,6 @@ import Menu from "./pages/Menu/Menu";
 import ProfileEdit from "./pages/ProfileEdit/ProfileEdit";
 import AccountInfo from "./pages/AccountInfo/AccountInfo";
 import UserLookAround from "./pages/UserLookAround/UserLookAround";
-import UserHome from "./pages/UserHome/UserHome";
 import FollowerFollowing from "./pages/FollowerFollowing/FollowerFollowing";
 import PostUpload from "./pages/PostUpload/PostUpload";
 import FeedDetail from "./pages/FeedDetail/FeedDetail";
@@ -17,6 +16,7 @@ import PickFeed from "./pages/PickFeed/PickFeed";
 import FeedLookAround from "./pages/FeedLookAround/FeedLookAround";
 import SearchFeeds from "./pages/SearchFeeds/SearchFeeds";
 import FilterFeeds from "./pages/FilterFeeds/FilterFeeds";
+import UserHome from "./pages/UserHome/UserHome";
 
 const router = createBrowserRouter([
   {

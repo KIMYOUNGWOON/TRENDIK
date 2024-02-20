@@ -312,7 +312,7 @@ const CommentListItem: React.FC<Props> = ({
               ) : comment.type === "comment" ? (
                 <Comment>{comment.comment}</Comment>
               ) : (
-                <GIf src={comment.gif} />
+                <GIf src={comment.gif} alt="gif" />
               )}
               <BtnWrapper>
                 <ReplyWrapper>

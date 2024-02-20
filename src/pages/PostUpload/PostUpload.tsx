@@ -235,7 +235,7 @@ const PostUpload = () => {
                           <RemoveBtn onClick={() => handleRemove(index)}>
                             ✕
                           </RemoveBtn>
-                          <PreviewImage src={url} />
+                          <PreviewImage src={url} alt="preview-image" />
                           <MarkWrapper>
                             <TextMark>{index === 0 ? "메인" : "서브"}</TextMark>
                             {index !== 0 && <NumMark>{index}</NumMark>}

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet";
 import { useInView } from "react-intersection-observer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
@@ -120,6 +121,16 @@ function Main() {
 
   return (
     <Container>
+      <Helmet>
+        <meta
+          name="description"
+          content="TRENDIK에서 다양한 패션 스타일을 탐색하세요. 패션 스타일로그 일기장을 통해 매일 스타일링을 기록하는 재미와 다른 유저들의 패션 센스를 탐색하는 새로운 공간 경험을 제공합니다."
+        />
+        <meta
+          name="keywords"
+          content="패션, 스타일, 로맨틱, 모던, 미니멀, 빈티지, 스트릿,패션 트렌드, 스타일로그"
+        />
+      </Helmet>
       <Header>
         <TextLogo>TRENDIK.</TextLogo>
         <MenuButton
@@ -145,7 +156,7 @@ function Main() {
                     {filter.type === "gender" ? (
                       <FilterText>{filter.value}</FilterText>
                     ) : (
-                      <FilterImage src={filter.image} />
+                      <FilterImage src={filter.image} alt="filter-image" />
                     )}
                     <FilterListText>{filter.text}</FilterListText>
                   </FilterListItem>
@@ -237,11 +248,11 @@ const ContentBox = styled.main`
   padding: 100px 10px;
 `;
 
-const FilterList = styled.ul`
+const FilterList = styled.div`
   margin-bottom: 60px;
 `;
 
-const FilterListItem = styled.li`
+const FilterListItem = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
