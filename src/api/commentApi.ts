@@ -134,6 +134,12 @@ export async function deleteComment(
       await updateDoc(feedRef, {
         commentCount: increment(-1),
       });
+      const collectionRef = collection(db, "replies");
+      const q = query(collectionRef, where("commentId", "==", commentId));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
     }
   } catch (error) {
     console.log(error);

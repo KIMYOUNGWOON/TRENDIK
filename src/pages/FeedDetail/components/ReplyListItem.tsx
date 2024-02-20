@@ -208,6 +208,8 @@ const ReplyWrapper = styled.div<{
   display: flex;
   align-items: center;
   gap: 10px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   padding-left: 62px;
   padding-right: 14px;
   background-color: ${({ $isFresh }) => ($isFresh ? "#fffddd" : "#fff")};

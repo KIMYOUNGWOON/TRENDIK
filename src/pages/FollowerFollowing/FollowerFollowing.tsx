@@ -102,6 +102,7 @@ function FollowerFollowing() {
             $selected={select}
             onClick={() => {
               navigate(`/users/${userId}/follower`, { replace: true });
+              setInputValue("");
             }}
           >
             팔로워
@@ -110,6 +111,7 @@ function FollowerFollowing() {
             $selected={select}
             onClick={() => {
               navigate(`/users/${userId}/following`, { replace: true });
+              setInputValue("");
             }}
           >
             팔로잉

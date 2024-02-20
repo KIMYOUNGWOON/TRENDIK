@@ -38,7 +38,11 @@ export async function getReplies(commentId: string) {
   }
 }
 
-export async function postingReply(commentId: string, reply: string) {
+export async function postingReply(
+  feedId: string | undefined,
+  commentId: string,
+  reply: string
+) {
   const authUser = auth.currentUser;
   try {
     if (authUser) {
@@ -48,6 +52,7 @@ export async function postingReply(commentId: string, reply: string) {
         id: "",
         userId: authUserId,
         userInfo: authUserInfo,
+        feedId,
         commentId,
         reply,
         createdAt: new Date(),

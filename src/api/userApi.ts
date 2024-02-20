@@ -235,9 +235,78 @@ export async function deleteAccount() {
   const authUser = auth.currentUser;
   try {
     if (authUser) {
+      const userId = authUser.uid;
       await deleteUser(authUser);
-      const docRef = doc(db, "users", authUser.uid);
+      const docRef = doc(db, "users", userId);
       await deleteDoc(docRef);
+
+      const repliesCollectionRef = collection(db, "replies");
+      const repliesQuery = query(
+        repliesCollectionRef,
+        where("userId", "==", userId)
+      );
+      const repliesQuerySnapshot = await getDocs(repliesQuery);
+      repliesQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const commentsCollectionRef = collection(db, "comments");
+      const commentsQuery = query(
+        commentsCollectionRef,
+        where("userId", "==", userId)
+      );
+      const commentsQuerySnapshot = await getDocs(commentsQuery);
+      commentsQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const feedsCollectionRef = collection(db, "feeds");
+      const feedsQuery = query(
+        feedsCollectionRef,
+        where("userId", "==", userId)
+      );
+      const feedsQuerySnapshot = await getDocs(feedsQuery);
+      feedsQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const followsCollectionRef = collection(db, "follows");
+      const followersQuery = query(
+        followsCollectionRef,
+        where("followerId", "==", userId)
+      );
+      const followingsQuery = query(
+        followsCollectionRef,
+        where("followingId", "==", userId)
+      );
+      const followersQuerySnapshot = await getDocs(followersQuery);
+      followersQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+      const followingsQuerySnapshot = await getDocs(followingsQuery);
+      followingsQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const likesCollectionRef = collection(db, "likes");
+      const likesQuery = query(
+        likesCollectionRef,
+        where("userId", "==", userId)
+      );
+      const likesQuerySnapshot = await getDocs(likesQuery);
+      likesQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const picksCollectionRef = collection(db, "picks");
+      const picksQuery = query(
+        picksCollectionRef,
+        where("userId", "==", userId)
+      );
+      const picksQuerySnapshot = await getDocs(picksQuery);
+      picksQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
     }
   } catch (error) {
     console.log(error);

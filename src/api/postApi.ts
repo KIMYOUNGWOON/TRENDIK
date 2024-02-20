@@ -243,6 +243,46 @@ export async function deleteFeed(
       const docRef = doc(db, "feeds", postId);
       await deleteDoc(docRef);
 
+      const picksCollectionRef = collection(db, "picks");
+      const picksQuery = query(
+        picksCollectionRef,
+        where("feedId", "==", postId)
+      );
+      const picksQuerySnapshot = await getDocs(picksQuery);
+      picksQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const commentsCollectionRef = collection(db, "comments");
+      const commentsQuery = query(
+        commentsCollectionRef,
+        where("feedId", "==", postId)
+      );
+      const commentsQuerySnapshot = await getDocs(commentsQuery);
+      commentsQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const repliesCollectionRef = collection(db, "replies");
+      const repliesQuery = query(
+        repliesCollectionRef,
+        where("feedId", "==", postId)
+      );
+      const repliesQuerySnapshot = await getDocs(repliesQuery);
+      repliesQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+      const likesCollectionRef = collection(db, "likes");
+      const likesQuery = query(
+        likesCollectionRef,
+        where("feedId", "==", postId)
+      );
+      const likesQuerySnapshot = await getDocs(likesQuery);
+      likesQuerySnapshot.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
       for (let i = 0; i < feedImageCount; i++) {
         const desertRef = ref(storage, `feeds/${postId}/feed-image${i}`);
         await deleteObject(desertRef);

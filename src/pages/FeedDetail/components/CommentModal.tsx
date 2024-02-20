@@ -176,7 +176,7 @@ const CommentModal: React.FC<Props> = ({
   });
 
   const postReplyMutation = useMutation({
-    mutationFn: (reply: string) => postingReply(commentInfo.id, reply),
+    mutationFn: (reply: string) => postingReply(postId, commentInfo.id, reply),
     onMutate: (reply: string) => {
       queryClient.cancelQueries({
         queryKey: ["replies", commentInfo.id],
@@ -195,6 +195,7 @@ const CommentModal: React.FC<Props> = ({
         id: previousValue.length + 1,
         userInfo: authUser,
         commentId: commentInfo.id,
+        feedId: postId,
         reply,
         fresh: true,
       };
