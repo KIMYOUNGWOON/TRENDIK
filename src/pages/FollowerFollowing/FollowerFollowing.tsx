@@ -59,7 +59,8 @@ function FollowerFollowing() {
     const filteredUsers = await searchingFollowerFollowing(
       select,
       userId,
-      value
+      value,
+      sort
     );
     if (select === "follower") {
       queryClient.setQueryData([select, userId], filteredUsers);

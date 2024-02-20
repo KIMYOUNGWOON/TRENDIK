@@ -89,16 +89,14 @@ export async function getPopularTag() {
 export async function searchingFollowerFollowing(
   action: string | undefined,
   userId: string | undefined,
-  keyword: string
+  keyword: string,
+  sort: string
 ) {
   try {
     const users =
       action === "follower"
         ? await getFollowers(userId)
-        : await getFollowings(userId, "basics");
-
-    console.log(users);
-    console.log(keyword);
+        : await getFollowings(userId, sort);
 
     const filteredUsers = users.filter((user) => {
       if (user) {
