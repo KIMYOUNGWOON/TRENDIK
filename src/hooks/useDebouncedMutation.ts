@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { debounce } from "lodash";
+import { debounce } from "lodash-es";
 import { useCallback, useEffect, useRef } from "react";
 
 export function useDebouncedMutation(

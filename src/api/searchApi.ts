@@ -91,11 +91,15 @@ export async function searchingFollowerFollowing(
   userId: string | undefined,
   keyword: string
 ) {
+  console.log(action);
   try {
     const users =
       action === "follower"
         ? await getFollowers(userId)
         : await getFollowings(userId, "sort");
+
+    console.log(users);
+    console.log(keyword);
 
     const filteredUsers = users.filter((user) => {
       if (user) {

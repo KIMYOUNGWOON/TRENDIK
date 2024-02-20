@@ -61,7 +61,11 @@ function FollowerFollowing() {
       userId,
       value
     );
-    queryClient.setQueryData([select, userId], filteredUsers);
+    if (select === "follower") {
+      queryClient.setQueryData([select, userId], filteredUsers);
+    } else {
+      queryClient.setQueryData([select, userId, sort], filteredUsers);
+    }
   });
 
   function handleChange(e: ChangeEvent<HTMLInputElement>) {
@@ -122,8 +126,9 @@ function FollowerFollowing() {
         {users?.length === 0 ? (
           <EmptyBox>
             <EmptyText>
-              {select === "follower" ? "나를 " : "내가"} 팔로우한 사용자가
-              없습니다.
+              {select === "follower"
+                ? "팔로워가 없습니다."
+                : "팔로잉이 없습니다."}
             </EmptyText>
           </EmptyBox>
         ) : (

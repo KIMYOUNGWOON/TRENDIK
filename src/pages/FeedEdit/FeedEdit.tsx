@@ -105,8 +105,6 @@ const FeedEdit = () => {
     }
   }, [data]);
 
-  console.log(postValue);
-
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     const { value } = e.target;
     setHashTagValue(value);
