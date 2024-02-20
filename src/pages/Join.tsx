@@ -733,7 +733,7 @@ const BodyInfoInput = styled.input`
   width: 70px;
   height: 34px;
   margin-right: 8px;
-  padding-left: 28px;
+  padding-left: 20px;
   border: none;
   border-radius: 8px;
   background-color: #f6f7f8;
