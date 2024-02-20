@@ -9,7 +9,6 @@ import {
 import { db } from "../firebase";
 
 export async function filteringFeeds(key: string, value: string) {
-  console.log(key, value);
   try {
     const collectionRef = collection(db, "feeds");
     const q = query(
@@ -22,8 +21,6 @@ export async function filteringFeeds(key: string, value: string) {
     querySnapshot.forEach((doc) => {
       filteredFeeds.push(doc.data());
     });
-
-    console.log(filteredFeeds);
 
     if (querySnapshot.empty) {
       return [];

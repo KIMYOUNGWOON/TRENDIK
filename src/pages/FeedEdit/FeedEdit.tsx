@@ -22,20 +22,20 @@ import {
 } from "react-beautiful-dnd";
 
 const GENDER = [
-  { id: 1, gender: "man", text: "남성" },
-  { id: 2, gender: "woman", text: "여성" },
+  { id: 1, gender: "남성" },
+  { id: 2, gender: "여성" },
 ];
 
 const STYLE = [
-  { id: 1, style: "romantic", text: "로맨틱" },
-  { id: 2, style: "modern", text: "모던" },
-  { id: 3, style: "minimal", text: "미니멀" },
-  { id: 4, style: "vintage", text: "빈티지" },
-  { id: 5, style: "street", text: "스트릿" },
-  { id: 6, style: "sporty", text: "스포티" },
-  { id: 7, style: "amecazi", text: "아메카지" },
-  { id: 8, style: "casual", text: "캐주얼" },
-  { id: 9, style: "classic", text: "클래식" },
+  { id: 1, style: "로맨틱" },
+  { id: 2, style: "모던" },
+  { id: 3, style: "미니멀" },
+  { id: 4, style: "빈티지" },
+  { id: 5, style: "스트릿" },
+  { id: 6, style: "스포티" },
+  { id: 7, style: "아메카지" },
+  { id: 8, style: "캐주얼" },
+  { id: 9, style: "클래식" },
 ];
 
 interface PostValue {
@@ -104,6 +104,8 @@ const PostUpload = () => {
       setPreviewUrlList(feedImages);
     }
   }, [data]);
+
+  console.log(postValue);
 
   function handleInputChange(e: ChangeEvent<HTMLInputElement>) {
     const { value } = e.target;
@@ -430,7 +432,7 @@ const PostUpload = () => {
                 {postValue.gender === el.gender && (
                   <CheckIcon icon={faCircleCheck} />
                 )}
-                {el.text}
+                {el.gender}
               </SelectItem>
             );
           })}
@@ -449,7 +451,7 @@ const PostUpload = () => {
                 {postValue.style === el.style && (
                   <CheckIcon icon={faCircleCheck} />
                 )}
-                {el.text}
+                {el.style}
               </SelectItem>
             );
           })}
