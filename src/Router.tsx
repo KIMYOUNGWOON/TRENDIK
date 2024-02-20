@@ -1,22 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
 import MainLayout from "./components/MainLayout";
 import AuthLayout from "./components/AuthLayout";
-import Join from "./pages/Join";
-import Login from "./pages/Login";
 import Main from "./pages/Main/Main";
 import Menu from "./pages/Menu/Menu";
 import ProfileEdit from "./pages/ProfileEdit/ProfileEdit";
 import AccountInfo from "./pages/AccountInfo/AccountInfo";
 import UserLookAround from "./pages/UserLookAround/UserLookAround";
+import UserHome from "./pages/UserHome/UserHome";
 import FollowerFollowing from "./pages/FollowerFollowing/FollowerFollowing";
-import PostUpload from "./pages/PostUpload/PostUpload";
-import FeedDetail from "./pages/FeedDetail/FeedDetail";
-import FeedEdit from "./pages/FeedEdit/FeedEdit";
-import PickFeed from "./pages/PickFeed/PickFeed";
 import FeedLookAround from "./pages/FeedLookAround/FeedLookAround";
 import SearchFeeds from "./pages/SearchFeeds/SearchFeeds";
 import FilterFeeds from "./pages/FilterFeeds/FilterFeeds";
-import UserHome from "./pages/UserHome/UserHome";
+import FeedDetail from "./pages/FeedDetail/FeedDetail";
+import PickFeed from "./pages/PickFeed/PickFeed";
+import FeedEdit from "./pages/FeedEdit/FeedEdit";
+import PostUpload from "./pages/PostUpload/PostUpload";
+import Join from "./pages/Join";
+import Login from "./pages/Login";
 
 const router = createBrowserRouter([
   {

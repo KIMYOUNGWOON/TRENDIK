@@ -60,7 +60,7 @@ const initialValue: PostValue = {
   style: "",
 };
 
-const PostUpload = () => {
+const FeedEdit = () => {
   const navigate = useNavigate();
   const [postValue, setPostValue] = useState<PostValue>(initialValue);
   const [hashTagValue, setHashTagValue] = useState("");
@@ -832,4 +832,4 @@ const SpinnerIcon = styled(FontAwesomeIcon)`
   font-size: 28px;
 `;
 
-export default PostUpload;
+export default FeedEdit;
