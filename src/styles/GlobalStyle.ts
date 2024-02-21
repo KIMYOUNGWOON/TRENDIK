@@ -10,7 +10,7 @@ const GlobalStyles = createGlobalStyle`
   
   body {
     height: 100%;
-    background-color: #ededed;
+    background-color: #222;
     font-family: 'Noto Sans KR', sans-serif;
   }
 
