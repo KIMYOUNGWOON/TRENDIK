@@ -155,7 +155,11 @@ function UserHome() {
                       </FollowBtn>
                     ))}
                   {!myPage && (
-                    <MessageBtn>
+                    <MessageBtn
+                      onClick={() => {
+                        navigate(`/direct/${userId}`);
+                      }}
+                    >
                       <MessageIcon icon={faEnvelope} />
                       <MessageText>메세지</MessageText>
                     </MessageBtn>

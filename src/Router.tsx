@@ -17,6 +17,8 @@ import FeedEdit from "./pages/FeedEdit/FeedEdit";
 import PostUpload from "./pages/PostUpload/PostUpload";
 import Join from "./pages/Join";
 import Login from "./pages/Login";
+import Message from "./pages/Message/Message";
+import DirectList from "./pages/DirectList/DirectList";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +39,8 @@ const router = createBrowserRouter([
       { path: "/feeds/:postId/edit", element: <FeedEdit /> },
       { path: "/:userId/picks", element: <PickFeed /> },
       { path: "/posting", element: <PostUpload /> },
+      { path: "/direct", element: <DirectList /> },
+      { path: "/direct/:userId", element: <Message /> },
     ],
   },
   {

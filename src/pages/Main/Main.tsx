@@ -1,95 +1,20 @@
+import { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useInView } from "react-intersection-observer";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-import styled from "styled-components";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { getAllFeeds } from "../../api/postApi";
-import FeedListItem from "./components/FeedListItem";
-import { useContext, useEffect, useState } from "react";
+import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
-import LoadingSpinner from "../../components/LoadingSpinner";
-import UserContext from "../../contexts/UserContext";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css/bundle";
-import romantic from "../../assets/images/romantic.jpg";
-import modern from "../../assets/images/modern.jpg";
-import minimal from "../../assets/images/minimal.jpg";
-import vintage from "../../assets/images/vintage.jpg";
-import street from "../../assets/images/street.jpg";
-import sporty from "../../assets/images/sporty.jpg";
-import amekaji from "../../assets/images/amekaji.jpg";
-import casual from "../../assets/images/casual.jpg";
-import classic from "../../assets/images/classic.jpg";
-
-const FilterTypes = [
-  { id: 1, type: "gender", value: "MAN", text: "남성", image: "" },
-  { id: 2, type: "gender", value: "WOMAN", text: "여성", image: "" },
-  {
-    id: 3,
-    type: "style",
-    value: "romantic",
-    text: "로맨틱",
-    image: romantic,
-  },
-  {
-    id: 4,
-    type: "style",
-    value: "modern",
-    text: "모던",
-    image: modern,
-  },
-  {
-    id: 5,
-    type: "style",
-    value: "minimal",
-    text: "미니멀",
-    image: minimal,
-  },
-  {
-    id: 6,
-    type: "style",
-    value: "vintage",
-    text: "빈티지",
-    image: vintage,
-  },
-  {
-    id: 7,
-    type: "style",
-    value: "street",
-    text: "스트릿",
-    image: street,
-  },
-  {
-    id: 8,
-    type: "style",
-    value: "sporty",
-    text: "스포티",
-    image: sporty,
-  },
-  {
-    id: 9,
-    type: "style",
-    value: "amekaji",
-    text: "아메카지",
-    image: amekaji,
-  },
-  {
-    id: 10,
-    type: "style",
-    value: "casual",
-    text: "캐주얼",
-    image: casual,
-  },
-  {
-    id: 11,
-    type: "style",
-    value: "classic",
-    text: "클래식",
-    image: classic,
-  },
-];
+import styled from "styled-components";
+import FeedListItem from "./components/FeedListItem";
+import { getAllFeeds } from "../../api/postApi";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import UserContext from "../../contexts/UserContext";
+import { FilterTypes } from "../../data/mainPageData";
 
 function Main() {
   const { authUserId } = useContext(UserContext);
@@ -133,13 +58,22 @@ function Main() {
       </Helmet>
       <Header>
         <TextLogo>TRENDIK.</TextLogo>
-        <MenuButton
-          icon={faBars}
-          onClick={() => {
-            navigate("/menu");
-            window.scrollTo(0, 0);
-          }}
-        />
+        <BtnWrapper>
+          <DirectBtn
+            icon={faPaperPlane}
+            onClick={() => {
+              navigate("/direct");
+              window.scrollTo(0, 0);
+            }}
+          />
+          <MenuBtn
+            icon={faBars}
+            onClick={() => {
+              navigate("/menu");
+              window.scrollTo(0, 0);
+            }}
+          />
+        </BtnWrapper>
       </Header>
       <ContentBox>
         <FilterList>
@@ -235,8 +169,23 @@ const TextLogo = styled.div`
   font-weight: 800;
 `;
 
-const MenuButton = styled(FontAwesomeIcon)`
-  font-size: 28px;
+const BtnWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 22px;
+`;
+
+const DirectBtn = styled(FontAwesomeIcon)`
+  font-size: 26px;
+  font-weight: 800;
+
+  &:hover {
+    cursor: pointer;
+  }
+`;
+
+const MenuBtn = styled(FontAwesomeIcon)`
+  font-size: 26px;
   font-weight: 800;
 
   &:hover {

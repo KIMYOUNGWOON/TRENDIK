@@ -1,12 +1,12 @@
 import { useContext, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import Header from "../../components/Header";
 import { componentMount } from "../../styles/Animation";
 import UserContext from "../../contexts/UserContext";
-import ProfileEditModal from "./components/ProfileEditModal";
 import EditImage from "./components/EditImage";
-import { useQuery } from "@tanstack/react-query";
 import { getUser } from "../../api/userApi";
+import ProfileEditModal from "./components/ProfileEditModal";
 
 function ProfileEdit() {
   const { authUserId } = useContext(UserContext);
@@ -39,8 +39,8 @@ function ProfileEdit() {
         <EditImage authUser={authUser} />
         <ProfileInfoEditBox>
           <InputWrapper>
-            <Label>닉네임</Label>
-            <Input value={authUser.nickName || ""} disabled />
+            <Label htmlFor="nickName">닉네임</Label>
+            <Input id="nickName" value={authUser.nickName || ""} disabled />
             <EditBtn
               onClick={() => {
                 editModalOpen("nickName");
@@ -50,8 +50,8 @@ function ProfileEdit() {
             </EditBtn>
           </InputWrapper>
           <InputWrapper>
-            <Label>성별</Label>
-            <Input value={authUser.gender || ""} disabled />
+            <Label htmlFor="gender">성별</Label>
+            <Input id="gender" value={authUser.gender || ""} disabled />
             <EditBtn
               onClick={() => {
                 editModalOpen("gender");
@@ -62,8 +62,8 @@ function ProfileEdit() {
           </InputWrapper>
           <Wrapper>
             <InputWrapper>
-              <Label>키</Label>
-              <Input value={authUser.height || 0} disabled />
+              <Label htmlFor="height">키</Label>
+              <Input id="height" value={authUser.height || 0} disabled />
               <EditBtn
                 onClick={() => {
                   editModalOpen("height");
@@ -73,8 +73,8 @@ function ProfileEdit() {
               </EditBtn>
             </InputWrapper>
             <InputWrapper>
-              <Label>몸무게</Label>
-              <Input value={authUser.weight || 0} disabled />
+              <Label htmlFor="weight">몸무게</Label>
+              <Input id="weight" value={authUser.weight || 0} disabled />
               <EditBtn
                 onClick={() => {
                   editModalOpen("weight");
@@ -84,8 +84,8 @@ function ProfileEdit() {
               </EditBtn>
             </InputWrapper>
             <InputWrapper>
-              <Label>신발 사이즈</Label>
-              <Input value={authUser.shoesSize || 0} disabled />
+              <Label htmlFor="shoesSize">신발 사이즈</Label>
+              <Input id="shoesSize" value={authUser.shoesSize || 0} disabled />
               <EditBtn
                 onClick={() => {
                   editModalOpen("shoesSize");
@@ -96,8 +96,8 @@ function ProfileEdit() {
             </InputWrapper>
           </Wrapper>
           <InputWrapper>
-            <Label>소개</Label>
-            <TextArea value={authUser.bio || ""} disabled></TextArea>
+            <Label htmlFor="bio">소개</Label>
+            <TextArea id="bio" value={authUser.bio || ""} disabled></TextArea>
             <BioEditBtn
               onClick={() => {
                 editModalOpen("bio");
