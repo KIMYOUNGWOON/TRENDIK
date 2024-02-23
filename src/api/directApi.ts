@@ -6,75 +6,12 @@ import {
   query,
   updateDoc,
   where,
+  onSnapshot,
+  arrayUnion,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 
-export async function getMessages(receiver: string) {
-  const authUser = auth.currentUser;
-  try {
-    if (authUser) {
-      const authUserId = authUser.uid;
-      const collectionRef = collection(db, "messages");
-
-      const query1 = query(
-        collectionRef,
-        where("sender", "==", authUserId),
-        where("receiver", "==", receiver)
-      );
-      const snapshot1 = await getDocs(query1);
-      const docs1 = snapshot1.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      const query2 = query(
-        collectionRef,
-        where("sender", "==", receiver),
-        where("receiver", "==", authUserId)
-      );
-      const snapshot2 = await getDocs(query2);
-      const docs2 = snapshot2.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      const combinedDocs = docs1.concat(docs2);
-      const sortedDocs = combinedDocs.sort(
-        (a: DocumentData, b: DocumentData) =>
-          a.createdAt.toDate() - b.createdAt.toDate()
-      );
-
-      return sortedDocs;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
 export async function sendMessage(receiver: string, message: string) {
-  const authUser = auth.currentUser;
-  try {
-    if (authUser) {
-      const sender = authUser.uid;
-      const messageSchema = {
-        sender,
-        receiver,
-        message,
-        createdAt: new Date(),
-      };
-      const collectionRef = collection(db, "messages");
-      const docRef = await addDoc(collectionRef, messageSchema);
-      await updateDoc(docRef, {
-        id: docRef.id,
-      });
-      createMessageRoom(receiver);
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-export async function createMessageRoom(receiver: string) {
   const authUser = auth.currentUser;
   try {
     if (authUser) {
@@ -86,22 +23,32 @@ export async function createMessageRoom(receiver: string) {
       );
       const snapshot = await getDocs(q);
 
-      let roomCheck: boolean = false;
+      let roomRef = null;
 
       snapshot.forEach((doc) => {
         const data = doc.data();
         if (data.participants.includes(receiver)) {
-          roomCheck = true;
+          roomRef = doc.ref;
         }
       });
 
-      if (!roomCheck) {
+      if (!roomRef) {
         const newRoomData = {
           participants: [authUserId, receiver],
+          messages: [],
           createdAt: new Date(),
         };
-        await addDoc(roomsRef, newRoomData);
+        const docRef = await addDoc(roomsRef, newRoomData);
+        roomRef = docRef;
       }
+
+      const messageSchema = {
+        sender: authUserId,
+        receiver,
+        message,
+        createdAt: new Date(),
+      };
+      await updateDoc(roomRef, { messages: arrayUnion(messageSchema) });
     }
   } catch (error) {
     console.log(error);
@@ -131,5 +78,45 @@ export async function getMessageRooms() {
   } catch (error) {
     console.log(error);
     return [];
+  }
+}
+
+export function subscribeMessages(
+  receiver: string | undefined,
+  onUpdate: (messages: DocumentData[]) => void
+) {
+  const authUser = auth.currentUser;
+  if (authUser) {
+    const authUserId = authUser.uid;
+    const collectionRef = collection(db, "messageRooms");
+
+    const q1 = query(
+      collectionRef,
+      where("participants", "array-contains", authUserId)
+    );
+
+    const q2 = query(
+      collectionRef,
+      where("participants", "array-contains", receiver)
+    );
+
+    const unsubscribe = onSnapshot(q1, (snapshot1) => {
+      snapshot1.forEach((doc1) => {
+        onSnapshot(q2, (snapshot2) => {
+          snapshot2.forEach((doc2) => {
+            if (doc1.id === doc2.id) {
+              const data = doc1.data();
+              if (data.participants.includes(receiver)) {
+                onUpdate(data.messages);
+              }
+            }
+          });
+        });
+      });
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }
 }

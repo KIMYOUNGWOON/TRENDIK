@@ -215,7 +215,7 @@ const Container = styled.div`
 
 const ContentBox = styled.div`
   padding-top: 40px;
-  padding-bottom: 70px;
+  padding-bottom: 71px;
   background-color: #fff;
 `;
 
