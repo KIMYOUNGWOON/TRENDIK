@@ -320,7 +320,7 @@ function Join() {
             />
             {!nickNameCheck && (
               <ErrorMessage>
-                최소 5자 이상이며 "영문(소문자)", "_"만 사용 가능합니다
+                최소 5자 이상이며 "영문(소문자)", "_", 숫자만 사용 가능합니다
               </ErrorMessage>
             )}
             {checkValue.nickNameCheck ? (

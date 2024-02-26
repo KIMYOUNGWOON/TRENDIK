@@ -6,7 +6,6 @@ import { faArrowUpLong } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getUser } from "../../api/userApi";
-import { componentMount } from "../../styles/Animation";
 import {
   ChangeEvent,
   FormEvent,
@@ -15,7 +14,11 @@ import {
   useEffect,
   useState,
 } from "react";
-import { sendMessage, subscribeMessages } from "../../api/directApi";
+import {
+  readMessage,
+  sendMessage,
+  subscribeMessages,
+} from "../../api/directApi";
 import UserContext from "../../contexts/UserContext";
 import { DocumentData } from "firebase/firestore";
 
@@ -28,11 +31,11 @@ function Message() {
 
   useEffect(() => {
     window.scrollTo(0, document.body.scrollHeight);
-  }, [messages]);
+    readMessage(userId, authUserId);
+  }, [userId, authUserId, messages]);
 
   useEffect(() => {
     const unsubscribe = subscribeMessages(userId, (newMessages) => {
-      console.log(newMessages);
       setMessages([...newMessages]);
     });
 
@@ -79,7 +82,7 @@ function Message() {
     [inputValue, sendMessageMutation]
   );
 
-  if (!user || !messages) {
+  if (!user) {
     return;
   }
 
@@ -111,11 +114,15 @@ function Message() {
                 $isSender={authUserId === message.sender}
               >
                 {message.message}
+                {authUserId === message.sender && (
+                  <ReadMark>
+                    {message.readBy.includes(userId) ? "읽음" : "안읽음"}
+                  </ReadMark>
+                )}
               </DirectMessage>
             );
           })}
         </DirectMessageWrapper>
-
         <Form onSubmit={handleSubmit}>
           <Input
             placeholder="메세지 보내기..."
@@ -131,9 +138,7 @@ function Message() {
   );
 }
 
-const Container = styled.div`
-  animation: ${componentMount} 0.15s linear;
-`;
+const Container = styled.div``;
 
 const Header = styled.div`
   display: flex;
@@ -171,7 +176,9 @@ const ProfileImage = styled.div<{ $profileImage: string }>`
   background-size: cover;
 `;
 
-const ProfileIcon = styled(FontAwesomeIcon)``;
+const ProfileIcon = styled(FontAwesomeIcon)`
+  font-size: 40px;
+`;
 
 const Nickname = styled.div`
   font-weight: 600;
@@ -191,6 +198,7 @@ const DirectMessageWrapper = styled.div`
 `;
 
 const DirectMessage = styled.div<{ $isSender: boolean }>`
+  position: relative;
   max-width: 200px;
   padding: 12px 22px;
   border-radius: 16px;
@@ -200,6 +208,16 @@ const DirectMessage = styled.div<{ $isSender: boolean }>`
   align-self: ${({ $isSender }) => ($isSender ? "flex-end" : "flex-start")};
   font-size: 14px;
   line-height: 1.5;
+`;
+
+const ReadMark = styled.div`
+  position: absolute;
+  top: 20px;
+  left: -60px;
+  width: 50px;
+  color: rgba(1, 1, 1, 0.5);
+  font-size: 12px;
+  text-align: right;
 `;
 
 const Form = styled.form`

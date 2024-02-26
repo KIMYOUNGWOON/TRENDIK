@@ -6,6 +6,7 @@ import { getMessageRooms } from "../../api/directApi";
 import { componentMount } from "../../styles/Animation";
 import Header from "../../components/Header";
 import DirectListItem from "./DirectListItem/DirectListItem";
+import { DocumentData } from "firebase/firestore";
 
 function DirectList() {
   const { authUserId } = useContext(UserContext);
@@ -15,24 +16,24 @@ function DirectList() {
     queryFn: () => getMessageRooms(),
   });
 
-  const rooms = messageRooms
+  const roomsWithContactInfo = messageRooms
     ? messageRooms.map((room) => {
         return {
           ...room,
-          participants: room.participants.filter(
-            (id: string) => id !== authUserId
+          participantsInfo: room.participantsInfo.filter(
+            (info: DocumentData) => info.userId !== authUserId
           ),
         };
       })
     : [];
 
-  console.log(rooms);
-
   return (
     <Container>
       <Header title="메시지" />
       <DirectListWrapper>
-        <DirectListItem></DirectListItem>
+        {roomsWithContactInfo.map((room: DocumentData) => {
+          return <DirectListItem key={room.id} room={room}></DirectListItem>;
+        })}
       </DirectListWrapper>
     </Container>
   );
@@ -42,6 +43,8 @@ const Container = styled.div`
   animation: ${componentMount} 0.15s linear;
 `;
 
-const DirectListWrapper = styled.div``;
+const DirectListWrapper = styled.div`
+  padding: 100px 0;
+`;
 
 export default DirectList;

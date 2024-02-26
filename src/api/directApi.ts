@@ -8,8 +8,12 @@ import {
   where,
   onSnapshot,
   arrayUnion,
+  doc,
+  deleteDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { getUser } from "./userApi";
+import { Message } from "./types";
 
 export async function sendMessage(receiver: string, message: string) {
   const authUser = auth.currentUser;
@@ -33,12 +37,16 @@ export async function sendMessage(receiver: string, message: string) {
       });
 
       if (!roomRef) {
+        const authUserInfo = await getUser(authUserId);
+        const contactUserInfo = await getUser(receiver);
         const newRoomData = {
           participants: [authUserId, receiver],
+          participantsInfo: [authUserInfo, contactUserInfo],
           messages: [],
           createdAt: new Date(),
         };
         const docRef = await addDoc(roomsRef, newRoomData);
+        await updateDoc(docRef, { id: docRef.id });
         roomRef = docRef;
       }
 
@@ -46,6 +54,7 @@ export async function sendMessage(receiver: string, message: string) {
         sender: authUserId,
         receiver,
         message,
+        readBy: [authUserId],
         createdAt: new Date(),
       };
       await updateDoc(roomRef, { messages: arrayUnion(messageSchema) });
@@ -118,5 +127,48 @@ export function subscribeMessages(
     return () => {
       unsubscribe();
     };
+  }
+}
+
+export async function readMessage(
+  receiver: string | undefined,
+  authUserId: string
+) {
+  try {
+    const collectionRef = collection(db, "messageRooms");
+
+    const q1 = query(
+      collectionRef,
+      where("participants", "array-contains", authUserId)
+    );
+    const snapshot1 = await getDocs(q1);
+
+    snapshot1.forEach(async (doc) => {
+      const roomData = doc.data();
+
+      if (roomData.participants.includes(receiver)) {
+        const updatedMessages = roomData.messages.map((message: Message) => {
+          if (!message.readBy.includes(authUserId)) {
+            return { ...message, readBy: [...message.readBy, authUserId] };
+          } else {
+            return message;
+          }
+        });
+        await updateDoc(doc.ref, { messages: updatedMessages });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function leaveMessageRoom(roomId: string | undefined) {
+  try {
+    if (roomId) {
+      const roomRef = doc(db, "messageRooms", roomId);
+      await deleteDoc(roomRef);
+    }
+  } catch (error) {
+    console.log(error);
   }
 }

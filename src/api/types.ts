@@ -37,3 +37,11 @@ export interface FeedUpdateData {
   imageFiles: (File | string)[];
   preImagesCount: number;
 }
+
+export interface Message {
+  sender: string;
+  receiver: string;
+  message: string;
+  readBy: string[];
+  createdAt: Date;
+}

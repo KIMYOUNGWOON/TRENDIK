@@ -46,11 +46,10 @@ const SimilarStyle: React.FC<Props> = ({ feedData }) => {
   );
 };
 
-const Container = styled.div`
-  padding: 0 20px;
-`;
+const Container = styled.div``;
 
 const Title = styled.div`
+  padding: 0 20px;
   margin-bottom: 18px;
   font-size: 14px;
   font-weight: 600;

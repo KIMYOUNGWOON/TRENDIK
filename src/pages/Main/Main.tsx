@@ -1,8 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useInView } from "react-intersection-observer";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import { faPaperPlane } from "@fortawesome/free-solid-svg-icons";
@@ -15,6 +15,8 @@ import { getAllFeeds } from "../../api/postApi";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import UserContext from "../../contexts/UserContext";
 import { FilterTypes } from "../../data/mainPageData";
+import { getMessageRooms } from "../../api/directApi";
+import { Message } from "../../api/types";
 
 function Main() {
   const { authUserId } = useContext(UserContext);
@@ -26,7 +28,7 @@ function Main() {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["allFeeds", sort],
-      queryFn: ({ pageParam }) => getAllFeeds(10, pageParam, sort),
+      queryFn: ({ pageParam }) => getAllFeeds(6, pageParam, sort),
       getNextPageParam: (lastPage: {
         feedList: DocumentData[];
         lastVisible: DocumentSnapshot | null;
@@ -43,6 +45,30 @@ function Main() {
       fetchNextPage();
     }
   }, [isFetching, initialLoading, inView, hasNextPage, fetchNextPage]);
+
+  const { data: messageRooms } = useQuery({
+    queryKey: ["messageRooms", authUserId],
+    queryFn: () => getMessageRooms(),
+  });
+
+  function allNotReadMessageCount() {
+    let count = 0;
+    if (messageRooms) {
+      messageRooms.forEach((room) => {
+        room.messages.forEach((message: Message) => {
+          if (!message.readBy.includes(authUserId)) {
+            count = count + 1;
+          }
+        });
+      });
+    }
+    return count;
+  }
+
+  const newMessageCount = useMemo(allNotReadMessageCount, [
+    authUserId,
+    messageRooms,
+  ]);
 
   return (
     <Container>
@@ -66,6 +92,16 @@ function Main() {
               window.scrollTo(0, 0);
             }}
           />
+          {newMessageCount > 0 && (
+            <MessageCount
+              onClick={() => {
+                navigate("/direct");
+                window.scrollTo(0, 0);
+              }}
+            >
+              {newMessageCount}
+            </MessageCount>
+          )}
           <MenuBtn
             icon={faBars}
             onClick={() => {
@@ -127,6 +163,7 @@ function Main() {
                       <FeedListItem
                         key={feed.id}
                         authUserId={authUserId}
+                        sort={sort}
                         feed={feed}
                         initialLoading={initialLoading}
                       />
@@ -137,7 +174,7 @@ function Main() {
             );
           })}
         </FeedListBox>
-        {data?.pages[0].feedList.length === 8 && (
+        {data?.pages[0].feedList.length === 6 && (
           <Observer ref={ref}>
             {isFetchingNextPage && <LoadingSpinner />}
           </Observer>
@@ -178,7 +215,24 @@ const BtnWrapper = styled.div`
 const DirectBtn = styled(FontAwesomeIcon)`
   font-size: 26px;
   font-weight: 800;
+  &:hover {
+    cursor: pointer;
+  }
+`;
 
+const MessageCount = styled.div`
+  position: absolute;
+  top: 42px;
+  right: 66px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background-color: #f50100;
+  color: #fff;
+  font-size: 12px;
   &:hover {
     cursor: pointer;
   }

@@ -76,7 +76,7 @@ const Container = styled.div`
 `;
 
 const ContentBox = styled.div`
-  padding: 140px 30px 0;
+  padding: 140px 30px 100px;
   background-color: #fff;
 `;
 

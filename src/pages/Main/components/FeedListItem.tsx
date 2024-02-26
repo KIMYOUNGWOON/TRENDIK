@@ -25,12 +25,14 @@ const settings = {
 
 interface Props {
   authUserId: string;
+  sort: string;
   feed: DocumentData;
   initialLoading: boolean;
 }
 
 const FeedListItem: React.FC<Props> = ({
   feed,
+  sort,
   authUserId,
   initialLoading,
 }) => {
@@ -85,7 +87,7 @@ const FeedListItem: React.FC<Props> = ({
           );
 
           queryClient.setQueryData(
-            ["allFeeds", authUserId],
+            ["allFeeds", sort],
             context.previousAllFeeds
           );
         }
@@ -107,7 +109,7 @@ const FeedListItem: React.FC<Props> = ({
           },
           unknown
         >
-      | undefined = queryClient.getQueryData(["allFeeds", authUserId]);
+      | undefined = queryClient.getQueryData(["allFeeds", sort]);
 
     previousLikeStatus.current = currentLikeStatus;
     previousAllFeeds.current = currentAllFeeds;
@@ -118,7 +120,7 @@ const FeedListItem: React.FC<Props> = ({
     );
 
     queryClient.setQueryData(
-      ["allFeeds", authUserId],
+      ["allFeeds", sort],
       (
         prev: InfiniteData<{
           feedList: DocumentData[];

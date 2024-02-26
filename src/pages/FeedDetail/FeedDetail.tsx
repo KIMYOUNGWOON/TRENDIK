@@ -19,7 +19,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
 import FeedDetailSkeletonUi from "./components/FeedDetailSkeletonUi";
-import { useContext, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import FeedSetUpModal from "./components/FeedSetUpModal";
 import { getLikeStatus, toggleLikeFeed } from "../../api/likeApi";
 import UserContext from "../../contexts/UserContext";
@@ -51,6 +51,10 @@ function FeedDetail() {
   const previousLikeStatus = useRef<boolean | undefined>();
   const previousFeedStatus = useRef<DocumentData | undefined>();
   const previousPickStatus = useRef<boolean | undefined>();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   const { data: feedData, isLoading } = useQuery({
     queryKey: ["feed", postId],
@@ -258,7 +262,20 @@ function FeedDetail() {
               })}
             </Slider>
           ) : (
-            <FeedImage $imageUrl={feedData.feedImages[0]} />
+            <FeedImage $imageUrl={feedData.feedImages[0]}>
+              <BrandBox>
+                {feedData.outer !== "-" && (
+                  <Outer>outer : {feedData.outer}</Outer>
+                )}
+                {feedData.top !== "-" && <Top>top : {feedData.top}</Top>}
+                {feedData.bottom !== "-" && (
+                  <Bottom>bottom : {feedData.bottom}</Bottom>
+                )}
+                {feedData.shoes !== "-" && (
+                  <Shoes>shoes : {feedData.shoes}</Shoes>
+                )}
+              </BrandBox>
+            </FeedImage>
           )}
           <IconWrapper>
             <HeartCommentWrapper>

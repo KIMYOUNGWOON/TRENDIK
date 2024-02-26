@@ -70,7 +70,7 @@ export async function uploadFeed(postData: PostData) {
 }
 
 export async function getAllFeeds(
-  pageSize: number = 10,
+  pageSize: number = 6,
   lastDoc: DocumentSnapshot | null = null,
   sort: string = "createdAt"
 ) {
