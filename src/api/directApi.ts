@@ -10,6 +10,7 @@ import {
   arrayUnion,
   doc,
   deleteDoc,
+  orderBy,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { getUser } from "./userApi";
@@ -44,6 +45,7 @@ export async function sendMessage(receiver: string, message: string) {
           participantsInfo: [authUserInfo, contactUserInfo],
           messages: [],
           createdAt: new Date(),
+          updatedAt: new Date(),
         };
         const docRef = await addDoc(roomsRef, newRoomData);
         await updateDoc(docRef, { id: docRef.id });
@@ -57,7 +59,10 @@ export async function sendMessage(receiver: string, message: string) {
         readBy: [authUserId],
         createdAt: new Date(),
       };
-      await updateDoc(roomRef, { messages: arrayUnion(messageSchema) });
+      await updateDoc(roomRef, {
+        updatedAt: new Date(),
+        messages: arrayUnion(messageSchema),
+      });
     }
   } catch (error) {
     console.log(error);
@@ -72,7 +77,8 @@ export async function getMessageRooms() {
       const roomsRef = collection(db, "messageRooms");
       const q = query(
         roomsRef,
-        where("participants", "array-contains", authUserId)
+        where("participants", "array-contains", authUserId),
+        orderBy("updatedAt", "desc")
       );
       const snapshot = await getDocs(q);
 

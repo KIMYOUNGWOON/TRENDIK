@@ -3,14 +3,21 @@ import { componentMount } from "../../styles/Animation";
 import Header from "../../components/Header";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
-import { faClone } from "@fortawesome/free-solid-svg-icons";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { getAllFeeds } from "../../api/postApi";
 import { useNavigate } from "react-router-dom";
-import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { useInView } from "react-intersection-observer";
 import { DocumentData, DocumentSnapshot } from "firebase/firestore";
 import { getPopularTag, postKeyword } from "../../api/searchApi";
+import SearchFeedListItem from "./components/SearchFeedListItem";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 function FeedLookAround() {
   const [inputValue, setInputValue] = useState("");
@@ -23,15 +30,16 @@ function FeedLookAround() {
     queryFn: () => getPopularTag(),
   });
 
-  const { data, fetchNextPage, hasNextPage, isFetching } = useInfiniteQuery({
-    queryKey: ["allFeeds"],
-    queryFn: ({ pageParam }) => getAllFeeds(20, pageParam),
-    getNextPageParam: (lastPage: {
-      feedList: DocumentData[];
-      lastVisible: DocumentSnapshot | null;
-    }) => lastPage.lastVisible ?? null,
-    initialPageParam: null,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
+    useInfiniteQuery({
+      queryKey: ["allFeeds"],
+      queryFn: ({ pageParam }) => getAllFeeds(15, pageParam),
+      getNextPageParam: (lastPage: {
+        feedList: DocumentData[];
+        lastVisible: DocumentSnapshot | null;
+      }) => lastPage.lastVisible ?? null,
+      initialPageParam: null,
+    });
 
   useEffect(() => {
     if (!isFetching && initialLoading) {
@@ -47,16 +55,19 @@ function FeedLookAround() {
     mutationFn: (tag: string) => postKeyword(tag),
   });
 
-  function handleChange(e: ChangeEvent<HTMLInputElement>) {
+  const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     setInputValue(value);
-  }
+  }, []);
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    navigate(`/feeds/search?tag=${inputValue}`);
-    searchFeedMutation.mutate(inputValue);
-  }
+  const handleSubmit = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      navigate(`/feeds/search?tag=${inputValue}`);
+      searchFeedMutation.mutate(inputValue);
+    },
+    [inputValue, navigate, searchFeedMutation]
+  );
 
   return (
     <Container>
@@ -65,6 +76,7 @@ function FeedLookAround() {
         <SearchBarBox onSubmit={handleSubmit}>
           <SearchIcon icon={faMagnifyingGlass} />
           <SearchInput
+            name="search"
             placeholder="# 해시태그로 검색"
             onChange={handleChange}
             value={inputValue}
@@ -91,28 +103,17 @@ function FeedLookAround() {
             return (
               <PageWrapper key={index}>
                 {page.feedList.map((feed) => {
-                  return (
-                    <FeedListItem
-                      key={feed.id}
-                      $feedImage={feed.feedImages[0]}
-                      onClick={() => {
-                        navigate(`/feeds/${feed.id}`);
-                      }}
-                    >
-                      {feed.feedImages.length > 1 && (
-                        <CopyIcon icon={faClone} />
-                      )}
-                      <Background>
-                        <ViewText>VIEW</ViewText>
-                      </Background>
-                    </FeedListItem>
-                  );
+                  return <SearchFeedListItem key={feed.id} feed={feed} />;
                 })}
               </PageWrapper>
             );
           })}
         </FeedListBox>
-        <Observer ref={ref} />
+        {data?.pages[0].feedList.length === 15 && (
+          <Observer ref={ref}>
+            {isFetchingNextPage && <LoadingSpinner />}
+          </Observer>
+        )}
       </ContentBox>
     </Container>
   );
@@ -209,50 +210,6 @@ const PageWrapper = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-`;
-
-const Background = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  inset: 0;
-  background-color: rgba(1, 1, 1, 0.3);
-  opacity: 0;
-  transition: 0.4s;
-`;
-
-const ViewText = styled.div`
-  padding: 6px 10px;
-  border-radius: 6px;
-  border: 1px solid #fff;
-  color: #fff;
-  font-size: 12px;
-`;
-
-const FeedListItem = styled.li<{ $feedImage: string }>`
-  position: relative;
-  width: 100%;
-  padding-bottom: 100%;
-  background-image: url(${({ $feedImage }) => $feedImage});
-  background-position: center;
-  background-size: cover;
-  transition: 0.4s;
-  &:hover {
-    cursor: pointer;
-    transform: scale(0.95);
-    & > ${Background} {
-      opacity: 1;
-    }
-  }
-`;
-
-const CopyIcon = styled(FontAwesomeIcon)`
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  color: #fff;
-  font-size: 16px;
 `;
 
 const Observer = styled.div``;

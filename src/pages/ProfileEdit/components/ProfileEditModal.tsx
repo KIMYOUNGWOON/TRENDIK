@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { ChangeEvent, useEffect, useState } from "react";
+import React, { ChangeEvent, useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { checkNickName, updateProfile } from "../../../api/userApi";
 import { nickNameRegex } from "../../../validation";
@@ -27,220 +27,217 @@ const pare: KeyType = {
   bio: "소개",
 };
 
-const ProfileEditModal: React.FC<Props> = ({
-  isOpened,
-  selected,
-  authUser,
-  editModalClose,
-}) => {
-  const initialValue: KeyType = {
-    nickName: "",
-    gender: "",
-    height: "",
-    weight: "",
-    shoesSize: "",
-    bio: "",
-  };
-  const { nickName, gender, height, weight, shoesSize, bio } = authUser;
-  const [inputValue, setInputValue] = useState(initialValue);
-  const [duplicateCheck, setDuplicateCheck] = useState(false);
-  const diff = authUser[selected] !== inputValue[selected];
-  const validNickName = nickNameRegex.test(inputValue.nickName);
-  const queryClient = useQueryClient();
+const ProfileEditModal: React.FC<Props> = React.memo(
+  ({ isOpened, selected, authUser, editModalClose }) => {
+    const initialValue: KeyType = {
+      nickName: "",
+      gender: "",
+      height: "",
+      weight: "",
+      shoesSize: "",
+      bio: "",
+    };
+    const { nickName, gender, height, weight, shoesSize, bio } = authUser;
+    const [inputValue, setInputValue] = useState(initialValue);
+    const [duplicateCheck, setDuplicateCheck] = useState(false);
+    const diff = authUser[selected] !== inputValue[selected];
+    const validNickName = nickNameRegex.test(inputValue.nickName);
+    const queryClient = useQueryClient();
 
-  useEffect(() => {
-    setInputValue({
-      nickName,
-      gender,
-      height,
-      weight,
-      shoesSize,
-      bio,
-    });
-    setDuplicateCheck(false);
-  }, [nickName, gender, height, weight, shoesSize, bio, isOpened]);
-
-  function handleChange(
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) {
-    const { name, value } = e.target;
-
-    setInputValue({ ...inputValue, [name]: value });
-  }
-
-  const editMutation = useMutation({
-    mutationFn: (data: { [x: string]: string }) => updateProfile(data),
-    onMutate: (data) => {
-      queryClient.cancelQueries({ queryKey: ["authUser", authUser.userId] });
-
-      const previousValue = queryClient.getQueryData([
-        "authUser",
-        authUser.userId,
-      ]);
-
-      if (previousValue) {
-        queryClient.setQueryData(["authUser", authUser.userId], {
-          ...previousValue,
-          ...data,
-        });
-      }
-
-      editModalClose();
-
-      return { previousValue };
-    },
-    onError: (error, variables, context) => {
-      console.error(`An error occurred while ${variables}: ${error.message}`);
-      if (context) {
-        queryClient.setQueryData(
-          ["authUser", authUser.userId],
-          context.previousValue
-        );
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["authUser", authUser.userId],
+    useEffect(() => {
+      setInputValue({
+        nickName,
+        gender,
+        height,
+        weight,
+        shoesSize,
+        bio,
       });
-      alert("정상적으로 변경되었습니다.");
-    },
-  });
+      setDuplicateCheck(false);
+    }, [nickName, gender, height, weight, shoesSize, bio, isOpened]);
 
-  function handleEdit() {
-    const updateData = { [selected]: inputValue[selected] };
-    editMutation.mutate(updateData);
-  }
+    function handleChange(
+      e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) {
+      const { name, value } = e.target;
 
-  return (
-    <Container $isOpened={isOpened}>
-      <Header>
-        <Title>{pare[selected]} 변경</Title>
-        <CancelBtn onClick={editModalClose}>취소</CancelBtn>
-      </Header>
-      {selected !== "bio" && selected !== "gender" && (
-        <>
-          <InputWrapper>
+      setInputValue({ ...inputValue, [name]: value });
+    }
+
+    const editMutation = useMutation({
+      mutationFn: (data: { [x: string]: string }) => updateProfile(data),
+      onMutate: (data) => {
+        queryClient.cancelQueries({ queryKey: ["authUser", authUser.userId] });
+
+        const previousValue = queryClient.getQueryData([
+          "authUser",
+          authUser.userId,
+        ]);
+
+        if (previousValue) {
+          queryClient.setQueryData(["authUser", authUser.userId], {
+            ...previousValue,
+            ...data,
+          });
+        }
+
+        editModalClose();
+
+        return { previousValue };
+      },
+      onError: (error, variables, context) => {
+        console.error(`An error occurred while ${variables}: ${error.message}`);
+        if (context) {
+          queryClient.setQueryData(
+            ["authUser", authUser.userId],
+            context.previousValue
+          );
+        }
+      },
+      onSettled: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["authUser", authUser.userId],
+        });
+        alert("정상적으로 변경되었습니다.");
+      },
+    });
+
+    function handleEdit() {
+      const updateData = { [selected]: inputValue[selected] };
+      editMutation.mutate(updateData);
+    }
+
+    return (
+      <Container $isOpened={isOpened}>
+        <Header>
+          <Title>{pare[selected]} 변경</Title>
+          <CancelBtn onClick={editModalClose}>취소</CancelBtn>
+        </Header>
+        {selected !== "bio" && selected !== "gender" && (
+          <>
+            <InputWrapper>
+              <Label htmlFor={selected}>{pare[selected]}</Label>
+              <Input
+                id={selected}
+                name={selected}
+                type={selected === "nickName" ? "text" : "number"}
+                autoComplete="off"
+                value={inputValue[selected] || ""}
+                onChange={handleChange}
+                $inputWidth={selected === "nickName"}
+              />
+              {selected === "nickName" &&
+                (duplicateCheck ? (
+                  <CheckComplete>
+                    <CheckCompleteIcon icon={faCircleCheck} /> 확인
+                  </CheckComplete>
+                ) : (
+                  <DuplicateCheck
+                    onClick={async () => {
+                      const check = await checkNickName(inputValue.nickName);
+                      if (check) {
+                        alert("사용 가능한 닉네임입니다.");
+                        setDuplicateCheck(check);
+                      } else {
+                        alert("이미 사용 중인 닉네임입니다.");
+                      }
+                    }}
+                  >
+                    중복 확인
+                  </DuplicateCheck>
+                ))}
+              <SaveButton
+                $diff={diff}
+                onClick={() => {
+                  if (diff) {
+                    if (selected === "nickName") {
+                      if (duplicateCheck && validNickName) {
+                        handleEdit();
+                      } else {
+                        alert("닉네임을 확인해 주세요.");
+                      }
+                    } else {
+                      handleEdit();
+                    }
+                  } else {
+                    alert("수정된 내용이 없습니다.");
+                  }
+                }}
+              >
+                저장
+              </SaveButton>
+            </InputWrapper>
+            {!validNickName && (
+              <ErrorMessage>
+                최소 5자 이상이며 "영문(소문자)", "_"만 사용 가능합니다
+              </ErrorMessage>
+            )}
+          </>
+        )}
+        {selected === "bio" && (
+          <TextAreaWrapper>
             <Label htmlFor={selected}>{pare[selected]}</Label>
-            <Input
+            <TextArea
               id={selected}
               name={selected}
-              type={selected === "nickName" ? "text" : "number"}
-              autoComplete="off"
               value={inputValue[selected] || ""}
               onChange={handleChange}
-              $inputWidth={selected === "nickName"}
             />
-            {selected === "nickName" &&
-              (duplicateCheck ? (
-                <CheckComplete>
-                  <CheckCompleteIcon icon={faCircleCheck} /> 확인
-                </CheckComplete>
-              ) : (
-                <DuplicateCheck
-                  onClick={async () => {
-                    const check = await checkNickName(inputValue.nickName);
-                    if (check) {
-                      alert("사용 가능한 닉네임입니다.");
-                      setDuplicateCheck(check);
-                    } else {
-                      alert("이미 사용 중인 닉네임입니다.");
-                    }
-                  }}
-                >
-                  중복 확인
-                </DuplicateCheck>
-              ))}
-            <SaveButton
+            <SaveBio
               $diff={diff}
               onClick={() => {
                 if (diff) {
-                  if (selected === "nickName") {
-                    if (duplicateCheck && validNickName) {
-                      handleEdit();
-                    } else {
-                      alert("닉네임을 확인해 주세요.");
-                    }
-                  } else {
-                    handleEdit();
-                  }
+                  handleEdit();
                 } else {
                   alert("수정된 내용이 없습니다.");
                 }
               }}
             >
               저장
-            </SaveButton>
-          </InputWrapper>
-          {!validNickName && (
-            <ErrorMessage>
-              최소 5자 이상이며 "영문(소문자)", "_"만 사용 가능합니다
-            </ErrorMessage>
-          )}
-        </>
-      )}
-      {selected === "bio" && (
-        <TextAreaWrapper>
-          <Label htmlFor={selected}>{pare[selected]}</Label>
-          <TextArea
-            id={selected}
-            name={selected}
-            value={inputValue[selected] || ""}
-            onChange={handleChange}
-          />
-          <SaveBio
-            $diff={diff}
-            onClick={() => {
-              if (diff) {
-                handleEdit();
-              } else {
-                alert("수정된 내용이 없습니다.");
-              }
-            }}
-          >
-            저장
-          </SaveBio>
-        </TextAreaWrapper>
-      )}
-      {selected === "gender" && (
-        <GenderSelectBox>
-          <GenderSelectTitle>성별</GenderSelectTitle>
-          <GenderInputWrapper>
-            <GenderInput
-              name="gender"
-              type="radio"
-              value="남성"
-              checked={inputValue[selected] === "남성"}
-              onChange={handleChange}
-            />
-            <GenderInputLabel>남성</GenderInputLabel>
-          </GenderInputWrapper>
-          <GenderInputWrapper>
-            <GenderInput
-              name="gender"
-              type="radio"
-              value="여성"
-              checked={inputValue[selected] === "여성"}
-              onChange={handleChange}
-            />
-            <GenderInputLabel>여성</GenderInputLabel>
-          </GenderInputWrapper>
-          <SaveGender
-            $diff={diff}
-            onClick={() => {
-              if (diff) {
-                handleEdit();
-              } else {
-                alert("수정된 내용이 없습니다.");
-              }
-            }}
-          >
-            저장
-          </SaveGender>
-        </GenderSelectBox>
-      )}
-    </Container>
-  );
-};
+            </SaveBio>
+          </TextAreaWrapper>
+        )}
+        {selected === "gender" && (
+          <GenderSelectBox>
+            <GenderSelectTitle>성별</GenderSelectTitle>
+            <GenderInputWrapper>
+              <GenderInput
+                name="gender"
+                type="radio"
+                value="남성"
+                checked={inputValue[selected] === "남성"}
+                onChange={handleChange}
+              />
+              <GenderInputLabel>남성</GenderInputLabel>
+            </GenderInputWrapper>
+            <GenderInputWrapper>
+              <GenderInput
+                name="gender"
+                type="radio"
+                value="여성"
+                checked={inputValue[selected] === "여성"}
+                onChange={handleChange}
+              />
+              <GenderInputLabel>여성</GenderInputLabel>
+            </GenderInputWrapper>
+            <SaveGender
+              $diff={diff}
+              onClick={() => {
+                if (diff) {
+                  handleEdit();
+                } else {
+                  alert("수정된 내용이 없습니다.");
+                }
+              }}
+            >
+              저장
+            </SaveGender>
+          </GenderSelectBox>
+        )}
+      </Container>
+    );
+  }
+);
 
 const Container = styled.div<{ $isOpened: boolean }>`
   position: fixed;

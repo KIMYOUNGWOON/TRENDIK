@@ -52,17 +52,17 @@ function FeedDetail() {
   const previousFeedStatus = useRef<DocumentData | undefined>();
   const previousPickStatus = useRef<boolean | undefined>();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   const { data: feedData, isLoading } = useQuery({
     queryKey: ["feed", postId],
     queryFn: () => getFeed(postId),
     enabled: !!postId,
   });
 
-  const myFeed = authUserId === feedData?.userId;
+  useEffect(() => {
+    if (!isLoading) {
+      window.scrollTo(0, 0);
+    }
+  }, [isLoading]);
 
   const { data: likeStatus } = useQuery({
     queryKey: ["likeStatus", `${authUserId}-${postId}`],
@@ -188,6 +188,8 @@ function FeedDetail() {
 
     togglePickMutation.mutate(currentValue ? "unPick" : "pick");
   }
+
+  const myFeed = authUserId === feedData?.userId;
 
   return (
     <Container>

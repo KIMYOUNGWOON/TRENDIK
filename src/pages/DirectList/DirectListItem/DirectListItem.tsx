@@ -30,7 +30,7 @@ const DirectListItem: React.FC<Props> = ({ room }) => {
         unsubscribe();
       }
     };
-  }, [roomId]);
+  }, [userInfo.userId]);
 
   const notReadMessageCount = useMemo(() => {
     const filteredList = messages.filter(
@@ -103,7 +103,10 @@ const DirectListItem: React.FC<Props> = ({ room }) => {
           )}
           <Wrapper>
             <Nickname>{userInfo.nickName}</Nickname>
-            <LastMessage>{messages[messages.length - 1]?.message}</LastMessage>
+            <LastMessage>
+              {messages[messages.length - 1]?.message.slice(0, 20)}
+              {messages[messages.length - 1]?.message.length > 20 && "..."}
+            </LastMessage>
           </Wrapper>
           {notReadMessageCount > 0 && (
             <NotReadMessageCount>{notReadMessageCount}</NotReadMessageCount>

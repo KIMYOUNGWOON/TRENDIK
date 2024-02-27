@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styled from "styled-components";
 import Header from "../../components/Header";
@@ -19,14 +19,14 @@ function ProfileEdit() {
     enabled: !!authUserId,
   });
 
-  function editModalOpen(target: string) {
+  const editModalOpen = useCallback((target: string) => {
     setIsOpened((prev) => !prev);
     setSelected(target);
-  }
+  }, []);
 
-  function editModalClose() {
+  const editModalClose = useCallback(() => {
     setIsOpened((prev) => !prev);
-  }
+  }, []);
 
   if (!authUser) {
     return;

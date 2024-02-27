@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet";
 import { useInView } from "react-intersection-observer";
@@ -51,7 +51,7 @@ function Main() {
     queryFn: () => getMessageRooms(),
   });
 
-  function allNotReadMessageCount() {
+  const allNotReadMessageCount = useCallback(() => {
     let count = 0;
     if (messageRooms) {
       messageRooms.forEach((room) => {
@@ -63,11 +63,12 @@ function Main() {
       });
     }
     return count;
-  }
+  }, [authUserId, messageRooms]);
 
   const newMessageCount = useMemo(allNotReadMessageCount, [
     authUserId,
     messageRooms,
+    allNotReadMessageCount,
   ]);
 
   return (

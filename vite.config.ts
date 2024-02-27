@@ -11,4 +11,9 @@ export default defineConfig({
       filename: "./dist/stats.html", // 분석 보고서 파일 경로 및 이름
     }),
   ],
+  define: {
+    "process.env.VITE_GIPHY_API_KEY": JSON.stringify(
+      process.env.VITE_GIPHY_API_KEY
+    ),
+  },
 });
