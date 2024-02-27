@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
+import { useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 import UserContext from "../../contexts/UserContext";
-import { getMessageRooms } from "../../api/directApi";
+import { subscribeToMessageRooms } from "../../api/directApi";
 import { componentMount } from "../../styles/Animation";
 import Header from "../../components/Header";
 import DirectListItem from "./DirectListItem/DirectListItem";
@@ -10,11 +9,19 @@ import { DocumentData } from "firebase/firestore";
 
 function DirectList() {
   const { authUserId } = useContext(UserContext);
+  const [messageRooms, setMessageRooms] = useState<DocumentData[]>([]);
 
-  const { data: messageRooms } = useQuery({
-    queryKey: ["messageRooms", authUserId],
-    queryFn: () => getMessageRooms(),
-  });
+  useEffect(() => {
+    const unsubscribe = subscribeToMessageRooms((rooms) => {
+      setMessageRooms([...rooms]);
+    });
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, []);
 
   const roomsWithContactInfo = messageRooms
     ? messageRooms.map((room) => {

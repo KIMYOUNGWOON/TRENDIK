@@ -96,6 +96,32 @@ export async function getMessageRooms() {
   }
 }
 
+export function subscribeToMessageRooms(
+  updateRooms: (rooms: DocumentData[]) => void
+) {
+  const authUser = auth.currentUser;
+  if (authUser) {
+    const authUserId = authUser.uid;
+    const roomsRef = collection(db, "messageRooms");
+    const q = query(
+      roomsRef,
+      where("participants", "array-contains", authUserId),
+      orderBy("updatedAt", "desc")
+    );
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const rooms: DocumentData[] = [];
+      snapshot.forEach((doc) => {
+        rooms.push(doc.data());
+      });
+      updateRooms(rooms);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }
+}
+
 export function subscribeMessages(
   receiver: string | undefined,
   onUpdate: (messages: DocumentData[]) => void

@@ -181,6 +181,7 @@ function UserHome() {
           <CountWrapper
             onClick={() => {
               navigate(`/users/${userId}/follower`);
+              window.scrollTo(0, 0);
             }}
           >
             {userHomeLoading ? (
@@ -193,6 +194,7 @@ function UserHome() {
           <CountWrapper
             onClick={() => {
               navigate(`/users/${userId}/following`);
+              window.scrollTo(0, 0);
             }}
           >
             {userHomeLoading ? (
