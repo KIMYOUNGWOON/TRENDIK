@@ -29,7 +29,8 @@
 <br />
 <h2>📍 구현 내용</h2>
 <h3>회원가입/로그인</h3>
-<img width=400 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/bb00d888-b630-4cd7-a005-9ec7f9de4a18">
+<img width=400 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/bb00d888-b630-4cd7-a005-9ec7f9de4a18"> 
+<img width=400 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/6cfc45e2-6a1b-4be2-851a-e7b54f3c4cd1">
 
 📍 인터랙티브 UI 개발
 • 모바일 앱과 유사한 레이아웃 설계
