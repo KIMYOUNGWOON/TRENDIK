@@ -3,7 +3,7 @@
 <h4>패션에 고관여된 고객들이 자유롭게 소통하고 콘텐츠를 공유하는 공간인 패션 스타일로그</h4>
 <h4>⭐️ 서비스 배포 링크 : 트렌딕 (https://trendik.shop)</h4>
 <br />
-<img width="1188" alt="스크린샷 2024-03-01 오후 3 08 59" src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/d42e72f7-5fa8-4e0d-bda1-bc3c036410b7">
+<img src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/d42e72f7-5fa8-4e0d-bda1-bc3c036410b7">
 <br />
 <br />
 <br />
@@ -23,12 +23,13 @@
 <h2>📍 프로젝트 시작 전 작업</h2>
 <h3>와이어 프레임 작성</h3>
 <h4>모바일 앱과 유사한 레이아웃 설계</h4>
-<img width="1188" alt="스크린샷 2024-03-01 오후 3 08 59" src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/e8c10a26-1ae1-4aca-8204-d9c9df76020c">
+<img src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/e8c10a26-1ae1-4aca-8204-d9c9df76020c">
 <br />
 <br />
 <br />
-<h2>구현 내용</h2>
-<h3></h3>
+<h2>📍 구현 내용</h2>
+<h3>회원가입/로그인</h3>
+<img width=400 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/bb00d888-b630-4cd7-a005-9ec7f9de4a18">
 
 📍 인터랙티브 UI 개발
 • 모바일 앱과 유사한 레이아웃 설계
