@@ -148,4 +148,28 @@
     </li>
   </ul>
 </details>
+<br>
+<h3>유저 조회/검색</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
+<br>
+<br>
+<details>
+  <summary>구현 내용</summary>
+  <ul>
+    <li>
+      <div>유저 조회</div>
+      <ul>
+        <li>"사용자 둘러보기" 페이지에 들어가면 다른 사용자들의 프로필을 카드 형태의 리스트로 보여줌</li>
+        <li>사용자가 리스트 중 프로필 이미지나 닉네임을 클릭하면, 그 사용자의 마이페이지로 이동</li>
+      </ul>
+    </li>
+    <li>
+      <div>유저 검색</div>
+      <ul>
+        <li>사용자가 검색창에 특정 유저의 닉네임을 입력하면, 검색 결과로 기존 카드 리스트 업데이트</li>
+        <li>사용자가 검색창에 입력할 때, race condition을 방지하고 API 요청을 줄이기 위해 debounce 기법 적용</li>
+      </ul>
+    </li>
+  </ul>
+</details>
 <h2>📍 트러블 슈팅</h2>
