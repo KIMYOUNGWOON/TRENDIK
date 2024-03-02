@@ -28,7 +28,7 @@ function Main() {
   const { data, fetchNextPage, hasNextPage, isFetching, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ["allFeeds", sort],
-      queryFn: ({ pageParam }) => getAllFeeds(6, pageParam, sort),
+      queryFn: ({ pageParam }) => getAllFeeds(8, pageParam, sort),
       getNextPageParam: (lastPage: {
         feedList: DocumentData[];
         lastVisible: DocumentSnapshot | null;
@@ -175,7 +175,7 @@ function Main() {
             );
           })}
         </FeedListBox>
-        {data?.pages[0].feedList.length === 6 && (
+        {data?.pages[0].feedList.length === 8 && (
           <Observer ref={ref}>
             {isFetchingNextPage && <LoadingSpinner />}
           </Observer>
