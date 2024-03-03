@@ -19,15 +19,19 @@
   <li>빌드 툴 : vite</li>
   <li>배포 자동화 : GitHub Actions / Amazon S3 / Cloud Front</li>
 </ul>
-<br />
+<br>
 <h2>📍 프로젝트 시작 전 작업</h2>
 <h3>와이어 프레임 작성</h3>
-<h4>• 모바일 앱과 유사한 레이아웃 설계</h4>
+<div>• 모바일 앱과 유사한 레이아웃 설계</div>
+<br>
 <img src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/e8c10a26-1ae1-4aca-8204-d9c9df76020c">
 <br />
 <br />
 <br />
 <h2>📍 구현 내용</h2>
+<h3>✓ 페이지 라우팅 설계</h3>
+<div>• React router를 사용해 Public(비로그인)과 Private(로그인) 클라이언트 페이지 설계</div>
+<br />
 <h3>✓ 회원가입/로그인</h3>
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/313fd3ae-3b55-48d9-b711-cc1d30fc1572"> 
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/6cfc45e2-6a1b-4be2-851a-e7b54f3c4cd1">
@@ -306,4 +310,85 @@
   </ul>
 </details>
 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/connectApi.ts">[팔로우 관련 API]</a>
+<br>
+<br>
+<br>
+<h3>✓ 게시글 CRUD</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
+<br>
+<br>
+<details>
+  <summary>Feeds Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>userId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>feedImages</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>content</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>hashTag</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>outer</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>top</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>bottom</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>shoes</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>gender</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>style</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>likeCount</td>
+      <td>number</td>
+    </tr>
+    <tr>
+      <td>commentCount</td>
+      <td>number</td>
+    </tr>
+    <tr>
+      <td>commentActive</td>
+      <td>boolean</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+    <tr>
+      <td>updatedAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
 <h2>📍 트러블 슈팅</h2>
