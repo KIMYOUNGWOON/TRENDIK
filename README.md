@@ -305,5 +305,5 @@
     </li>
   </ul>
 </details>
-📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/pages/ProfileEdit/components/ProfileEditModal.tsx#L67">[팔로우 관련 API]</a>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/connectApi.ts">[팔로우 관련 API]</a>
 <h2>📍 트러블 슈팅</h2>
