@@ -155,6 +155,35 @@
   </ul>
 </details>
 <br>
+<h3>사용자 정보</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/0d7629f3-4dc7-4b46-a66b-f901f7100c48">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/5125c4b7-94b3-4954-8bc9-f945ba2f327b">
+<br>
+<br>
+<details>
+  <summary>구현 내용</summary>
+  <ul>
+    <li>
+      <div>게정 정보 관리</div>
+      <ul>
+        <li>회원가입 시 입력한 이름을 변경할 수 있도록 함</li>
+        <li>Firebase Authentication을 활용해 비밀번호를 변경할 수 있도록 함</li>
+        <li>사용자는 회원을 탈퇴하여 사용자에 대한 모든 정보를 삭제할 수 있도록 함</li>
+      </ul>
+    </li>
+    <li>
+      <div>프로필 관리</div>
+      <ul>
+        <li>프로필 이미지와 커버 이미지를 동시에 바꾸거나 각각 개별로 변경할 수 있도록 함</li>
+        <li>프로필 이미자와 커버이미지를 초기화하여 기본 상태로 되돌릴 수 있도록 함</li>
+        <li>프로필 이미자와 커버이미지를 업데이트할 때 파이어베이스 스토리지에 주소를 동일하게 하여 이전 이미지들을 덮어씌워 새로 업데이트하면 이전 이미지는 삭제되도록 하여 스토리지 용량을 효율적으로 관리</li>
+        <li>닉네임, 성별, 키, 몸무게, 신발사이즈, 소개 등을 변경할 수 있도록 함 </li>
+        <li>닉네임은 중복되면 안되는 사항이기에 중복체크 후에 변경 가능하도록 함</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<br>
 <h3>유저 조회/검색</h3>
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
 <br>
