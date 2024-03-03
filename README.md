@@ -34,7 +34,7 @@
 <br />
 <br />
 <details>
-  <summary>User Collection 스키마</summary>
+  <summary>Users Collection 스키마</summary>
   <table>
     <tr>
       <th>Key</th>
@@ -94,7 +94,7 @@
   <summary>구현 내용</summary>
   <ul>
     <li>
-      <div>회원가입 기능을 통해 사용자는 계정을 생성할 수 있습니다.</div>
+      <div>회원가입 기능을 통해 사용자는 계정을 생성할 수 있다.</div>
       <ul>
         <li>Firebase Authentication을 이용해 이메일/비밀번호 인증을 통한 회원가입 기능 구현</li>
         <li>회원가입 필수 요소: 이메일, 비밀번호, 이름, 닉네임, 성별, 키, 몸무게, 신발사이즈</li>
@@ -102,7 +102,7 @@
       </ul>
     </li>
     <li>
-      <div>로그인 및 로그아웃 기능을 통해 사용자는 편리하게 서비스를 이용할 수 있습니다.</div>
+      <div>로그인 및 로그아웃 기능을 통해 사용자는 편리하게 서비스 이용할 수 있다.</div>
       <ul>
         <li>Firebase Authentication을 활용한 이메일/비밀번호 로그인 기능 구현</li>
         <li>signOut 메소드를 이용해 로그아웃 기능 구현</li>
@@ -164,7 +164,7 @@
   <summary>구현 내용</summary>
   <ul>
     <li>
-      <div>게정 정보 관리</div>
+      <div>계정 정보 관리</div>
       <ul>
         <li>이름 변경 기능 : 회원가입 시 입력한 이름을 변경할 수 있음</li>
         <li>비밀번호 변경 기능 : Firebase Authentication을 활용해 비밀번호를 변경할 수 있음</li>
@@ -187,7 +187,7 @@
   <summary>사용자 경험 향상</summary>
   <ul>
     <li>
-      <div>옵티미스틱 업데이트 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/pages/ProfileEdit/components/ProfileEditModal.tsx#L67">📌 [코드 보러가기]</a></div>
+      <div>옵티미스틱 업데이트 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/pages/ProfileEdit/components/ProfileEditModal.tsx#L67">[코드 보러가기]</a></div>
       <ul>
         <li>즉각적 UI 반영: 사용자가 이름, 닉네임, 성별, 키, 몸무게, 신발사이즈, 소개 등의 정보를 업데이트할 때 서버 응답을 기다리지 않고 바로 UI에 변경사항 반영</li>
         <li>useMutation 활용: 서버로부터의 응답 대신 클라이언트 상에 즉각적인 업데이트를 적용하여 사용자 경험 개선</li>
@@ -244,4 +244,66 @@
     </li>
   </ul>
 </details>
+<br>
+<h3>✓ 팔로우/팔로잉</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/587cf459-0952-43c1-8394-41d1372d8a00">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/d883f9ba-d522-47d4-8f50-267048a08a42">
+<br>
+<br>
+<details>
+  <summary>Follows Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>followerId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>followingId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>구현 내용</summary>
+  <ul>
+    <li>
+      <div>사용자 또는 다른 사용자의 마이페이지에서 팔로우/팔로잉 정보를 볼 수 있고 관계를 수정 할 수 있다.</div>
+      <ul>
+        <li>팔로우/팔로잉 수 표시</li>
+        <li>팔로우/팔로잉 유저 리스트</li>
+        <li>팔로우/팔로잉 관계 수정</li>
+      </ul>
+    </li>
+    <li>
+      <div>팔로우/팔로잉 리스트 페이지에서 정렬 및 검색을 통해 사용자를 빠르게 찾을 수 있다.</div>
+      <ul>
+        <li>팔로우한 날짜 기준으로 유저 리스트를 오래된 순, 최근 순으로 정렬할 수 있는 기능 제공</li>
+        <li>페이지 상단의 검색창을 통해 닉네임을 이용하여 팔로우/팔로잉 유저를 찾을 수 있음</li>
+        <li>검색 기능의 경우 디바운스 기법을 적용해 불필요한 API 요청을 줄임</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>사용자 경험 향상</summary>
+  <ul>
+    <li>
+      <div>옵티미스틱 업데이트와 디바운스 접목</div>
+      <ul>
+        <li>관계 수정 시 즉각적인 반응을 보여주기 위해 옵티미스틱 업데이트</li>
+        <li>빠르게 연속적으로 버튼을 클릭하면 서버와 클라이언트의 상태가 달라져 UI 플리커링 발생</li>
+        <li>디바운스 기법을 접목하여, UI는 즉시 반영되면서도 서버에 대한 불필요한 요청은 줄임</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/pages/ProfileEdit/components/ProfileEditModal.tsx#L67">[팔로우 관련 API]</a>
 <h2>📍 트러블 슈팅</h2>
