@@ -307,6 +307,14 @@
         <li>디바운스 기법을 접목하여, UI는 즉시 반영되면서도 서버에 대한 불필요한 요청은 줄임</li>
       </ul>
     </li>
+    <li>
+      <div>스켈레톤 UI 도입</div>
+      <ul>
+        <li>팔로우 상태를 불러올 때 렌더링 된 후 서버 상태 값으로 UI가 바뀜</li>
+        <li>서버 상태가 완전히 적용되기 전에 스켈레톤 UI를 보여줌</li>
+        <li>동시에 상태가 업데이트되어 일관된 사용자 경험 보장</li>
+      </ul>
+    </li>
   </ul>
 </details>
 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/connectApi.ts">[팔로우 관련 API]</a>
@@ -315,9 +323,7 @@
 <br>
 <h3>✓ 게시글 CRUD</h3>
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/7e178eba-f3f6-487a-97af-3cadddec8d73">
-<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
-
-
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/137fe3b4-01c9-412f-9149-27a2178bc411">
 <br>
 <br>
 <details>
@@ -392,5 +398,81 @@
       <td>Date</td>
     </tr>
   </table>
+</details>
+<details>
+  <summary>게시글 조회</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>메인 페이지에서 모든 사용자의 게시글 전체 조회</li>
+        <li>각 사용자 마이페이지에서 해당 사용자의 게시글 조회</li>
+        <li>게시글은 최신순으로 정렬</li>
+      </ul>
+    </li>
+    <li>
+      <div>렌더링 최적화</div>
+      <ul>
+        <li>useInView, useInfiniteQuery 이 두가지를 이용해서 무한 스크롤 구현</li>
+        <li>스크롤 위치가 페이지 하단에 도달했을 때 추가 데이터를 불러옴</li>
+        <li>다음 데이터를 불러오는 동안 로딩스피너 표시</li>
+        <li>전체 게시물 조회 시 8개씩 페이징 처리</li>
+      </ul>
+    </li>
+    <li>
+      <div>사용자 경험 향상</div>
+      <ul>
+        <li>UI 플리커링 현상을 막기 위해 스켈레톤 UI 도입</li>
+        <li>게시물이 로드되는 동안 대략적인 페이지의 레이아웃을 미리 보여줌</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>게시글 생성</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>게시글 생성 필수 요소 : 이미지, 해시태그, 게시글, 착용 브랜드, 성별, 스타일</li>
+        <li>이미지는 최대 3개까지 업로드 가능하며, 3개 초과 시 알림 경고 표시</li>
+        <li>react-beautiful-dnd 라이브러리 활용하여 이미지 노출 순서를 드래그로 변경할 수 있도록 구현</li>
+        <li>필수 요소가 전부 입력되어야 업로드 버튼 활성화</li>
+      </ul>
+    </li>
+    <li>
+      <div>렌더링 최적화</div>
+      <ul>
+        <li>react-image-file-resizer 라이브러리 활용</li>
+        <li>이미지를 업로드할 때 리사이징하여 파이어베이스 스토리지에 저장</li>
+        <li>이미지 파일의 크기를 최적 품질을 유지하며 40~50KB 이하로 줄여 전체적인 페이지 성능 향상</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>게시글 수정/삭제</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>본인이 등록한 게시물만 수정/삭제가 가능</li>
+        <li>게시글 생성 필수 요소 전부 수정 가능</li>
+        <li>게시물 수정 시 새로운 이미지를 업로드하면, 기존에 저장된 이미지는 Storage에서 자동으로 삭제되도록 처리</li>
+        <li>Storage 관리를 최적화하고 중복을 방지함</li>
+         존재하지 않는 게시물을 참조하는 데이터 때문에 오류가 발생
+      </ul>
+    </li>
+    <li>
+      <div>데이터베이스 관리</div>
+      <ul>
+        <li>게시물 수정 시 새로운 이미지를 업로드하면, 기존에 저장된 이미지는 Storage에서 자동으로 삭제되도록 처리</li>
+        <li>Storage 관리를 최적화하고 이미지 중복을 방지함</li>
+        <li>Firestore에서 게시물 삭제에 따른 참조 데이터 관리</li>
+        <li>Firestore에서 게시물 삭제에 따른 참조 데이터 관리</li>
+         존재하지 않는 게시물을 참조하는 데이터 때문에 오류가 발생
+      </ul>
+    </li>
+  </ul>
 </details>
 <h2>📍 트러블 슈팅</h2>
