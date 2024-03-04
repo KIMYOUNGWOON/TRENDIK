@@ -314,8 +314,10 @@
 <br>
 <br>
 <h3>✓ 게시글 CRUD</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/7e178eba-f3f6-487a-97af-3cadddec8d73">
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
-<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
+
+
 <br>
 <br>
 <details>
