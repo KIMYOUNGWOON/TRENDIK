@@ -470,4 +470,135 @@
     </li>
   </ul>
 </details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/postApi.ts">[게시물 관련 API]</a>
+<br>
+<br>
+<br>
+<h3>✓ 댓글 CRUD</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/5ca896a2-1d74-40be-a564-22ee7f8b4d99">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/893c25a9-27cf-4ff9-814f-ba5270622852">
+<br>
+<br>
+<details>
+  <summary>Comments Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>userId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>feedId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>userInfo</td>
+      <td>DocumentData</td>
+    </tr>
+    <tr>
+      <td>comment?</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>gif?</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>likeCount</td>
+      <td>number</td>
+    </tr>
+    <tr>
+      <td>fresh</td>
+      <td>boolean</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+    <tr>
+      <td>updatedAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>댓글 생성</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>사용자는 텍스트 형태로 댓글을 작성할 수 있음</li>
+        <li>사용자는 Gif 파일을 댓글에 첨부하여 동적인 표현을 할 수 있음</li>
+      </ul>
+    </li>
+    <li>
+      <div>사용자 경험 향상</div>
+      <ul>
+        <li>방금 사용자가 작성한 댓글이 어떤 것인지 명확히 인식할 수 있도록 해당 댓글의 배경을 잠시 연노랑으로 강조하여 표시</li>
+        <li>댓글이 생성될 때마다 스크롤이 최상단으로 올라가며, 맨 위에는 최신 댓글이 표시</li>
+        <li>옵티미스틱 업데이트를 적용하여 즉각적으로 댓글 표시</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>댓글 조회</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>사용자가 댓글을 조회할 때, 댓글들이 최신 순으로 정렬되어 표시</li>
+        <li>useInView, useInfiniteQuery 이 두가지를 이용해서 무한 스크롤 구현</li>
+        <li>첫 페이지 로딩 시, 최초 16개의 댓글만 로드</li>
+        <li>스크롤 위치가 페이지 하단에 도달했을 때 추가 데이터를 불러옴</li>
+        <li>다음 데이터를 불러오는 동안 로딩스피너 표시</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>댓글 수정/삭제</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>자신이 작성한 댓글에 대해서는 수정 및 삭제가 가능</li>
+        <li>게시물의 작성자는 다른 사용자들이 작성한 댓글을 삭제할 수 있음</li>
+        <li>댓글 삭제 시 참조되어 있는 대댓글도 데이터베이스에서 함께 전부 삭제</li>
+        <li>댓글 삭제 및 수정의 경우도 옵티미스틱 업데이트를 적용하여 즉각적으로 피드백 전달</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>대댓글 CRUD</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>사용자는 어떤 댓글에 대해 대댓글을 작성할 수 있음</li>
+        <li>대댓글은 원 댓글 바로 아래에 소규모 들여쓰기와 함께 표시</li>
+        <li>토글로 대댓글을 펼쳐서 보거나 숨길 수 있도록 구현</li>
+        <li>자신이 작성한 대댓글을 수정하거나 삭제할 수 있음</li>
+        <li>게시글의 작성자는 대댓글을 포함한 모든 댓글을 필요에 따라 삭제할 수 있음</li>
+        <li>대댓글 생성, 수정, 삭제의 경우 옵티미스틱 업데이트를 적용하여 즉각적인 피드백 전달</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/commentApi.ts">[댓글 관련 API]</a>
+<br>
+<br>
+<br>
 <h2>📍 트러블 슈팅</h2>
