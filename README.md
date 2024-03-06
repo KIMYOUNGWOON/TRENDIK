@@ -31,6 +31,35 @@
 <h2>📍 구현 내용</h2>
 <h3>✓ 페이지 라우팅 설계</h3>
 <div>• React router를 사용해 Public(비로그인)과 Private(로그인) 클라이언트 페이지 설계</div>
+<details>
+  Public 페이지
+Public 페이지는 로그인하지 않은 사용자도 접근할 수 있는 페이지입니다. 이에는 로그인 페이지와 회원가입 페이지가 포함됩니다.
+  <summary>구현 내용</summary>
+  <ul>
+    <li>
+      <div>Public 페이지</div>
+      <ul>
+        <li>Public 페이지는 로그인하지 않은 사용자도 접근할 수 있는 페이지</li>
+        <li>이에는 로그인 페이지와 회원가입 페이지가 포함</li>
+      </ul>
+    </li>
+    <li>
+      <div>Private 페이지</div>
+      <ul>
+        <li>Private 페이지는 로그인한 사용자만 접근할 수 있는 페이지</li>
+        <li>로그인하지 않은 상태에서 이 페이지에 접근하려고 하면, 자동으로 로그인 페이지로 리다이렉션</li>
+        <li>Firebase의 onAuthStateChanged 메소드를 사용하여 사용자의 로그인 상태를 구독하고 관리함으로써 구현</li>
+      </ul>
+    </li>
+    <li>
+      <div>공통 레이아웃</div>
+      <ul>
+        <li>레이아웃 컴포넌트를 만들고 Oulet을 활용하여 공통 레이아웃 설계</li>
+        <li>Public 페이지 공통 레이아웃, Private 페이지 공통 레이아웃 크게 두개로 나눔</li>
+      </ul>
+    </li>
+  </ul>
+</details>
 <br />
 <h3>✓ 회원가입/로그인</h3>
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/313fd3ae-3b55-48d9-b711-cc1d30fc1572"> 
