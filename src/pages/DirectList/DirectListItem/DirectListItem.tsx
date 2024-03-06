@@ -6,7 +6,7 @@ import { faEllipsisVertical } from "@fortawesome/free-solid-svg-icons";
 import { useContext, useEffect, useMemo, useState } from "react";
 import UserContext from "../../../contexts/UserContext";
 import { leaveMessageRoom, subscribeMessages } from "../../../api/directApi";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 
 interface Props {
   room: DocumentData;
@@ -17,9 +17,9 @@ const DirectListItem: React.FC<Props> = ({ room }) => {
   const [messages, setMessages] = useState<DocumentData[]>([]);
   const [slide, setSlide] = useState(false);
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const roomId = room.id;
   const userInfo = room.participantsInfo[0];
+  const visible = room.visible.includes(authUserId);
 
   useEffect(() => {
     const unsubscribe = subscribeMessages(userInfo.userId, (newMessages) => {
@@ -42,37 +42,15 @@ const DirectListItem: React.FC<Props> = ({ room }) => {
 
   const leaveMessageRoomMutation = useMutation({
     mutationFn: () => leaveMessageRoom(roomId),
-    onMutate: () => {
-      queryClient.cancelQueries({ queryKey: ["messageRooms", authUserId] });
-
-      const previousValue = queryClient.getQueryData([
-        "messageRooms",
-        authUserId,
-      ]);
-
-      queryClient.setQueryData(
-        ["messageRooms", authUserId],
-        (prev: DocumentData[]) => prev.filter((room) => room.id !== roomId)
-      );
-
-      return { previousValue };
-    },
-    onError: (error, variables, context) => {
-      console.error(`An error occurred while ${variables}: ${error.message}`);
-      if (context) {
-        queryClient.setQueryData(
-          ["messageRooms", authUserId],
-          context.previousValue
-        );
-      }
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["messageRooms", authUserId] });
-    },
   });
 
   function handleMutation() {
     leaveMessageRoomMutation.mutate();
+    setSlide((prev) => !prev);
+  }
+
+  if (!visible) {
+    return;
   }
 
   return (

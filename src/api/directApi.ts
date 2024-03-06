@@ -11,6 +11,8 @@ import {
   doc,
   deleteDoc,
   orderBy,
+  arrayRemove,
+  getDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
 import { getUser } from "./userApi";
@@ -43,6 +45,7 @@ export async function sendMessage(receiver: string, message: string) {
         const newRoomData = {
           participants: [authUserId, receiver],
           participantsInfo: [authUserInfo, contactUserInfo],
+          visible: [authUserId, receiver],
           messages: [],
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -63,6 +66,15 @@ export async function sendMessage(receiver: string, message: string) {
         updatedAt: new Date(),
         messages: arrayUnion(messageSchema),
       });
+      const docSnap = await getDoc(roomRef);
+      if (docSnap.exists()) {
+        if (!docSnap.data().visible.includes(receiver)) {
+          await updateDoc(roomRef, {
+            updatedAt: new Date(),
+            visible: arrayUnion(receiver),
+          });
+        }
+      }
     }
   } catch (error) {
     console.log(error);
@@ -195,10 +207,29 @@ export async function readMessage(
 }
 
 export async function leaveMessageRoom(roomId: string | undefined) {
+  const authUser = auth.currentUser;
   try {
-    if (roomId) {
+    if (authUser && roomId) {
+      const authUserId = authUser.uid;
       const roomRef = doc(db, "messageRooms", roomId);
-      await deleteDoc(roomRef);
+      await updateDoc(roomRef, { visible: arrayRemove(authUserId) });
+      const docSnap = await getDoc(roomRef);
+      if (docSnap.exists()) {
+        const roomData = docSnap.data();
+        const updatedMessages = roomData.messages.map((message: Message) => {
+          if (!message.readBy.includes(authUserId)) {
+            return { ...message, readBy: [...message.readBy, authUserId] };
+          } else {
+            return message;
+          }
+        });
+        console.log(updatedMessages);
+        await updateDoc(docSnap.ref, { messages: updatedMessages });
+        const visible = roomData.visible;
+        if (visible.length === 0) {
+          await deleteDoc(roomRef);
+        }
+      }
     }
   } catch (error) {
     console.log(error);
