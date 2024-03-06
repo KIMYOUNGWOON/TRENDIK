@@ -31,6 +31,7 @@
 <h2>📍 구현 내용</h2>
 <h3>✓ 페이지 라우팅 설계</h3>
 <div>• React router를 사용해 Public(비로그인)과 Private(로그인) 클라이언트 페이지 설계</div>
+<br>
 <details>
   <summary>구현 내용</summary>
   <ul>
