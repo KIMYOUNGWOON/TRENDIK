@@ -601,4 +601,123 @@
 <br>
 <br>
 <br>
+<h3>✓  실시간 채팅 기능</h3>
+<img width=820 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/ad135537-ce9a-4df5-b6c2-f88dbb901622">
+<br>
+<br>
+<details>
+  <summary>messageRooms Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>participants</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>participantsInfo</td>
+      <td>DocumentDate[]</td>
+    </tr>
+    <tr>
+      <td>visible</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>messages</td>
+      <td>DocumentDate[]</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+    <tr>
+      <td>updatedAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>Message SubCollection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>sender</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>receiver</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>message</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>readBy</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>구현 내용</summary>
+  <ul>
+    <li>
+      <div>실시간 스트리밍</div>
+      <ul>
+        <li>채팅 기능의 핵심 요소는 사용자 간의 실시간 상호작용</li>
+        <li>파이어베이스의 onSnapshot 메소드 활용</li>
+        <li>각 유저의 메시지방 리스트 쿼리 또는 특정 메시지방을 onSnapshot으로 구독</li>
+        <li>데이터 변경 사항을 즉시 감지하여 페이지 새로고침 없이 데이터가 실시간으로 반영</li>
+      </ul>
+    </li>
+    <li>
+      <div>메시지방 관리</div>
+      <ul>
+        <li>새 메시지가 추가될 때마다 메시지방 updatedAt 필드 갱신</li>
+        <li>메시지방 리스트 정렬 기준을 updatedAt 최신순으로 정렬</li>
+        <li>가장 최근에 메시지가 온 메시지방이 제일 상단에 오도록 함</li>
+        <li>메시지방을 둘다 나갔을 때 데이터베이스에서 삭제 처리</li>
+      </ul>
+    </li>
+    <li>
+      <div>읽음 표시</div>
+      <ul>
+        <li>메시지에 readBy 필드를 추가하여 이미 읽은 유저의 ID 목록을 배열로 관리</li>
+        <li>메시지방에 들어가면 상대가 보낸 메시지 전부 readBy필드에 ID를 추가하여 읽음 처리</li>
+        <li>메시지방을 나가면 상대가 보낸 메시지 전부 readBy필드에 ID를 추가하여 읽음 처리</li>
+      </ul>
+    </li>
+    <li>
+      <div>메시지 수 표시</div>
+      <ul>
+        <li>메인페이지에서 전체 받은 메시지 수 표시</li>
+        <li>메시지방 리스트 페이지에서 방 별로 받은 메시지 수 표시</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>데이터 구조 설계</summary>
+  <ul>
+    <li>개별 메시지를 각각의 문서로 관리하는 방식으로 접근</li>
+    <li>각 메시지방을 나타내는 별도의 컬렉션을 관리하는 등 데이터베이스의 복잡성을 증가</li>
+    <li>각 메시지에 대한 세밀한 조작이 필요하지 않음</li>
+    <li>메시지방 문서 내 필드에 메시지를 배열로 관리하는 방식으로 변경</li>
+    <li>메시지를 배열로 관리함으로써, 데이터베이스의 복잡성을 줄이고 데이터 관리를 보다 간편하게 할 수 있었음</li>
+    <li>한 번의 쿼리로 특정 대화방의 모든 메시지를 조회하여 메시지 로딩 시 효율성 증가</li>
+  </ul>
+</details>
 <h2>📍 트러블 슈팅</h2>
