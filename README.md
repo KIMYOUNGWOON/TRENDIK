@@ -32,8 +32,6 @@
 <h3>✓ 페이지 라우팅 설계</h3>
 <div>• React router를 사용해 Public(비로그인)과 Private(로그인) 클라이언트 페이지 설계</div>
 <details>
-  Public 페이지
-Public 페이지는 로그인하지 않은 사용자도 접근할 수 있는 페이지입니다. 이에는 로그인 페이지와 회원가입 페이지가 포함됩니다.
   <summary>구현 내용</summary>
   <ul>
     <li>
