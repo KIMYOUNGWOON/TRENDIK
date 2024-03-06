@@ -720,4 +720,5 @@
     <li>한 번의 쿼리로 특정 대화방의 모든 메시지를 조회하여 메시지 로딩 시 효율성 증가</li>
   </ul>
 </details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/directApi.ts">[채팅 관련 API]</a>
 <h2>📍 트러블 슈팅</h2>
