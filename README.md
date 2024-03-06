@@ -749,4 +749,11 @@
   </ul>
 </details>
 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/directApi.ts">[채팅 관련 API]</a>
-<h2>📍 트러블 슈팅</h2>
+<br>
+<br>
+<br>
+<h3>✓ 좋아요 & 찜하기 기능</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/71fffffb-eb01-49db-af47-5c2e8966db45">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/ed14bc5f-27b7-4a47-b49d-8381738a8c19">
+<br>
+<br>
