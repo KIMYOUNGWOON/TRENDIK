@@ -223,7 +223,6 @@ export async function leaveMessageRoom(roomId: string | undefined) {
             return message;
           }
         });
-        console.log(updatedMessages);
         await updateDoc(docSnap.ref, { messages: updatedMessages });
         const visible = roomData.visible;
         if (visible.length === 0) {
