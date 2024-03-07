@@ -924,4 +924,71 @@
     </li>
   </ul>
 </details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/searchApi.ts">[검색 관련 API]</a>
 <br>
+<br>
+<br>
+<h3>✓ 메인 페이지 & 게시물 디테일 페이지</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/b73ed208-e0d5-499b-b4af-8410803808d4">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/2cfe137e-3827-4640-8170-d510f7bf845e">
+<br>
+<br>
+<details>
+  <summary>메인 페이지</summary>
+  <ul>
+    <li>
+      <div>게시물 무한스크롤 구현</div>
+      <ul>
+        <li>useInfiniteQuery를 사용하여 게시물을 페이징 처리하여 불러옴</li>
+        <li>useInView를 사용하여 게시물 리스트 끝에 도달했는 지 감지 페이징 처리하여 불러옴</li>
+        <li>게시물 리스트 끝에 도달하면, useInfiniteQuery에서 제공하는 fetchNextPage함수를 호출하여 추가 데이터를 불러옴</li>
+      </ul>
+    </li>
+    <li>
+      <div>필터 기능 구현</div>
+      <ul>
+        <li>성별, 스타일을 선택하여 필터링된 게시물 리스트를 확인할 수 있도록 구현</li>
+        <li>필터 리스트는 Swiper 컴포넌트를 사용하여 슬라이드 형식으로 구현</li>
+        <li>필터 리스트 중 하나를 클릭하면 URL의 끝 부분에 쿼리스트링을 추가하여 페이지 이동</li>
+        <li>해당 페이지에서 useSearchParams로 쿼리스트링에 접근</li>
+        <li>decodeURIComponent 함수를 통해 URL 인코딩 해제</li>
+        <li>가져온 key, value를 데이터베이스에 쿼리로 사용해 필터링된 리스트를 가져옴</li>
+      </ul>
+    </li>
+    <li>
+      <div>정렬 기능 구현</div>
+      <ul>
+        <li></li>
+        <li>사용자가 인기순 또는 최신순으로 게시물 리스트를 정렬할 수 있는 기능 구현</li>
+        <li>페이지가 로드될 때 기본적으로 최신순으로 게시물이 정렬되며, 사용자가 원하는 경우 인기순으로 정렬할 수 있음</li>
+        <li>정렬 기준은 sort라는 상태 변수로 관리되며, 이 상태의 초기값은 "최신순"으로 설정</li>
+        <li>사용자가 정렬 기준을 변경하면, sort 값이 바뀌고 useQuery의 쿼리키 값이 바뀌게 되어 새로 데이터 페칭</li>
+        <li>사용자가 "인기순"을 선택하면, 좋아요 카운트 수에 따라 게시물을 내림차순으로 정렬하여 받아옴</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>게시물 디테일 페이지</summary>
+  <ul>
+    <li>
+      <div>게시물 조회</div>
+      <ul>
+        <li>게시물 검색 페이지에 들어가면 모든 게시물을 그리드 형태로 보여줌</li>
+        <li>게시물 썸네일에 호버시 어떤 게시물 선택되는지 바로 알 수 있게 동적 UI 구현</li>
+        <li>사용자가 게시물 썸네일을 클릭하면 해당 게시물 페이지로 이동</li>
+      </ul>
+    </li>
+    <li>
+      <div>게시물 검색</div>
+      <ul>
+        <li>게시물 등록 시 설정한 해시태그를 기반으로 검색되도록 구현</li>
+        <li>사용자가 입력한 해시태그가 설정된 게시물 리스트 업데이트</li>
+        <li>검색 진행한 해시태그 키워드를 카운팅하여 인기 해시태그로 노출</li>
+        <li>검색된 적이 없는 키워드이면 문서를 새로 생성하고 그렇지 않으면 해당 문서의 카운트 필드 값을 +1</li>
+        <li>검색창 하단에 인기 해시태그를 클릭하면 별도의 입력없이 바로 검색</li>
+        <li>해당 해시태그로 검색된 게시물 없으면 검색된 결과가 없다는 UI 노출</li>
+      </ul>
+    </li>
+  </ul>
+</details>
