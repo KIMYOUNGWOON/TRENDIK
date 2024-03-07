@@ -757,3 +757,126 @@
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/ed14bc5f-27b7-4a47-b49d-8381738a8c19">
 <br>
 <br>
+<details>
+  <summary>Likes Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>userId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>type</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>feedId?</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>commentId?</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>Picks Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>userId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>feedId</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>feedImages</td>
+      <td>string[]</td>
+    </tr>
+    <tr>
+      <td>createdAt</td>
+      <td>Date</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>좋아요 기능</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>사용자는 본인이 작성한 게시물 및 댓글을 포함 모든 게시물, 댓글에 좋아요를 할 수 있음</li>
+      </ul>
+    </li>
+    <li>
+      <div>옵티미스틱 업데이트</div>
+      <ul>
+        <li>useMutation을 활용해 옵티미스틱 업데이트 구현</li>
+        <li>서버 상태를 기다리지 않고 즉각적으로 UI 업데이트</li>
+        <li>mutationFn가 실행되기 전에 onMuate 옵션을 활용해 실행 전에 업데이트가 되도록 구현</li>
+        <li>만약 에러가 나서 실패시 onError 옵션을 활용해 저장해둔 이전 값으로 롤백</li>
+        <li>성공적으로 이루어지면 해당 쿼리를 무효화하여 서버상태 반영</li> 
+      </ul>
+    </li>
+    <li>
+      <div>디바운스 접목</div>
+      <ul>
+        <li>옵티미스틱 업데이트로 즉시 피드백은 전달하는데 연속적인 클릭 시 문제 발생</li>
+        <li>UI 플리커링이 발생하거나 클라이언트 상태랑 서버상태 불일치 발생</li>
+        <li>버튼을 연속적으로 클릭하여 서버에 요청을 보내는 경우 디바운스 기법 적용</li>
+        <li>지연시간을 설정하여 지연시간 내 요청들 중 마지막 요청에 한해서 실제 한번만 요청이 수행되도록 구현</li>
+        <li>불필요한 요청의 수를 줄이고, UI의 안정성을 높임</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>찜하기 기능</summary>
+  <ul>
+    <li>
+      <div>구현 내용</div>
+      <ul>
+        <li>게시물을 찜하여 마이픽 페이지에 게시물을 저장할 수 있음</li>
+        <li>저장된 게시물에 호버시 어떤 게시물 선택되는지 바로 알 수 있게 동적 UI 구현</li>
+      </ul>
+    </li>
+        <li>
+      <div>옵티미스틱 업데이트</div>
+      <ul>
+        <li>useMutation을 활용해 옵티미스틱 업데이트 구현</li>
+        <li>서버 상태를 기다리지 않고 즉각적으로 UI 업데이트</li>
+        <li>mutationFn가 실행되기 전에 onMuate 옵션을 활용해 실행 전에 업데이트가 되도록 구현</li>
+        <li>만약 에러가 나서 실패시 onError 옵션을 활용해 저장해둔 이전 값으로 롤백</li>
+        <li>성공적으로 이루어지면 해당 쿼리를 무효화하여 서버상태 반영</li> 
+      </ul>
+    </li>
+    <li>
+      <div>디바운스 접목</div>
+      <ul>
+        <li>옵티미스틱 업데이트로 즉시 피드백은 전달하는데 연속적인 클릭 시 문제 발생</li>
+        <li>UI 플리커링이 발생하거나 클라이언트 상태랑 서버상태 불일치 발생</li>
+        <li>버튼을 연속적으로 클릭하여 서버에 요청을 보내는 경우 디바운스 기법 적용</li>
+        <li>지연시간을 설정하여 지연시간 내 요청들 중 마지막 요청에 한해서 실제 한번만 요청이 수행되도록 구현</li>
+        <li>불필요한 요청의 수를 줄이고, UI의 안정성을 높임</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/likeApi.ts">[좋아요 관련 API]</a>
+📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/pickApi.ts">[찜하기 관련 API]</a>
