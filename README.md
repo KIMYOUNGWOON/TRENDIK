@@ -241,42 +241,6 @@
   </ul>
 </details>
 <br>
-<h3>✓ 유저 조회/검색</h3>
-<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
-<br>
-<br>
-<details>
-  <summary>구현 내용</summary>
-  <ul>
-    <li>
-      <div>유저 조회</div>
-      <ul>
-        <li>"사용자 둘러보기" 페이지에 들어가면 다른 사용자들의 프로필을 카드 형태의 리스트로 보여줌</li>
-        <li>사용자가 리스트 중 프로필 이미지나 닉네임을 클릭하면, 그 사용자의 마이페이지로 이동</li>
-      </ul>
-    </li>
-    <li>
-      <div>유저 검색</div>
-      <ul>
-        <li>사용자가 검색창에 특정 유저의 닉네임을 입력하면, 검색 결과로 기존 카드 리스트 업데이트</li>
-        <li>사용자가 검색창에 입력할 때, race condition을 방지하고 API 요청을 줄이기 위해 debounce 기법 적용</li>
-      </ul>
-    </li>
-  </ul>
-</details>
-<details>
-  <summary>사용자 경험 향상</summary>
-  <ul>
-    <li>
-      <div>스켈레톤 UI 도입</div>
-      <ul>
-        <li>컴포넌트가 마운트될 때, 팔로우 상태 데이터를 서버로부터 불러오는 과정에서 발생하던 UI 깜빡임 현상(플리커링)을 제거하여 부드러운 사용자 경험 제공</li>
-        <li>유저 리스트를 불러올 때, 프로필 이미지 유무에 따른 렌더링 불일치 문제도 해결하여 통일된 인터페이스 제공</li>
-      </ul>
-    </li>
-  </ul>
-</details>
-<br>
 <h3>✓ 팔로우/팔로잉</h3>
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/587cf459-0952-43c1-8394-41d1372d8a00">
 <img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/d883f9ba-d522-47d4-8f50-267048a08a42">
@@ -880,3 +844,84 @@
 </details>
 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/likeApi.ts">[좋아요 관련 API]</a>
 📌 <a href="https://github.com/KIMYOUNGWOON/TRENDIK/blob/main/src/api/pickApi.ts">[찜하기 관련 API]</a>
+<br>
+<br>
+<br>
+<h3>✓ 검색 기능</h3>
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/c8eb9dc3-b43d-43f0-a511-76bf072b8680">
+<img width=410 src="https://github.com/KIMYOUNGWOON/TRENDIK/assets/126956430/356f0022-946e-4320-a7de-b636c30bbc63">
+<br>
+<br>
+<details>
+  <summary>Keywords Collection 스키마</summary>
+  <table>
+    <tr>
+      <th>Key</th>
+      <th>Type</th>
+    </tr>
+    <tr>
+      <td>id</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>searchTag</td>
+      <td>string</td>
+    </tr>
+    <tr>
+      <td>searchCount</td>
+      <td>number</td>
+    </tr>
+  </table>
+</details>
+<details>
+  <summary>사용자 조회/검색</summary>
+  <ul>
+    <li>
+      <div>사용자 조회</div>
+      <ul>
+        <li>"사용자 둘러보기" 페이지에 들어가면 다른 사용자들의 프로필을 카드 형태의 리스트로 보여줌</li>
+        <li>사용자가 리스트 중 프로필 이미지나 닉네임을 클릭하면, 그 사용자의 마이페이지로 이동</li>
+      </ul>
+    </li>
+    <li>
+      <div>사용자 검색</div>
+      <ul>
+        <li>사용자가 검색창에 특정 유저의 닉네임을 입력하면, 검색 결과로 기존 카드 리스트 업데이트</li>
+        <li>해당 닉네임으로 검색된 사용자가 없으면 검색된 결과가 없다는 UI 노출</li>
+        <li>사용자가 검색창에 입력할 때, race condition을 방지하고 API 요청을 줄이기 위해 debounce 기법 적용</li>
+      </ul>
+    </li>
+    <li>
+      <div>스켈레톤 UI 도입</div>
+      <ul>
+        <li>컴포넌트가 마운트될 때, 팔로우 상태 데이터를 서버로부터 불러오는 과정에서 발생하던 UI 깜빡임 현상(플리커링)을 제거하여 부드러운 사용자 경험 제공</li>
+        <li>유저 리스트를 불러올 때, 프로필 이미지 유무에 따른 렌더링 불일치 문제도 해결하여 통일된 인터페이스 제공</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<details>
+  <summary>게시물 조회/검색</summary>
+  <ul>
+    <li>
+      <div>게시물 조회</div>
+      <ul>
+        <li>게시물 검색 페이지에 들어가면 모든 게시물을 그리드 형태로 보여줌</li>
+        <li>게시물 썸네일에 호버시 어떤 게시물 선택되는지 바로 알 수 있게 동적 UI 구현</li>
+        <li>사용자가 게시물 썸네일을 클릭하면 해당 게시물 페이지로 이동</li>
+      </ul>
+    </li>
+    <li>
+      <div>게시물 검색</div>
+      <ul>
+        <li>게시물 등록 시 설정한 해시태그를 기반으로 검색되도록 구현</li>
+        <li>사용자가 입력한 해시태그가 설정된 게시물 리스트 업데이트</li>
+        <li>검색 진행한 해시태그 키워드를 카운팅하여 인기 해시태그로 노출</li>
+        <li>검색된 적이 없는 키워드이면 문서를 새로 생성하고 그렇지 않으면 해당 문서의 카운트 필드 값을 +1</li>
+        <li>검색창 하단에 인기 해시태그를 클릭하면 별도의 입력없이 바로 검색</li>
+        <li>해당 해시태그로 검색된 게시물 없으면 검색된 결과가 없다는 UI 노출</li>
+      </ul>
+    </li>
+  </ul>
+</details>
+<br>
