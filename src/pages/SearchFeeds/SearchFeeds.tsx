@@ -65,6 +65,7 @@ const FeedList = styled.ul`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   padding-top: 100px;
+  padding-bottom: 71px;
 `;
 
 const Background = styled.div`

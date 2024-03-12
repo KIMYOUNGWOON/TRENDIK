@@ -129,9 +129,10 @@ const Container = styled.div<{ $isOpened: boolean }>`
   background-color: #fff;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
-  transform: translate(-50%, ${({ $isOpened }) => ($isOpened ? "0" : "-100%")});
+  transform: translate(-50%, ${({ $isOpened }) => ($isOpened ? "0" : "-120%")});
   transition: 0.3s;
   overflow: hidden;
+  z-index: 1;
 `;
 
 const Wrapper = styled.div`
