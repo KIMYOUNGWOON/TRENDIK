@@ -30,7 +30,7 @@ const Navigation: React.FC<Props> = ({ authUserId }) => {
         <NavIcon
           icon={faMagnifyingGlass}
           onClick={() => {
-            navigate("/feeds", { replace: true });
+            navigate("/feeds");
             window.scrollTo(0, 0);
           }}
         />
